@@ -1,0 +1,29 @@
+defmodule PrometheusEntry.Endpoint do
+  use Phoenix.Endpoint, otp_app: :prometheus
+
+  @parsers_options [
+    parsers: [:urlencoded, :multipart, :json],
+    pass: ["*/*"],
+    json_decoder: Phoenix.json_library(),
+    length: 20_000_000 # * (20*1024*1024=20000000) bytes - 20 megabytes
+  ]
+
+  @cors_options [
+    origins: ["http://localhost:8080"],
+    allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
+    allow_headers: ["authorization", "content-type", "accept"],
+    allow_credentials: true,
+    max_age: 86_400 # * (24*60*60=86400) seconds - 1 day
+  ]
+
+  plug Plug.RequestId
+  plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
+  plug Plug.Logger
+
+  plug Plug.Parsers, @parsers_options
+  plug Plug.MethodOverride
+  plug Plug.Head
+  plug Corsica, @cors_options
+
+  plug PrometheusEntry.Router
+end

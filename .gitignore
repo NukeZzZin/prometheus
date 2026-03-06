@@ -1,0 +1,37 @@
+# ignore temporary files
+*.swp
+*.swo
+*.bak
+*.tmp
+*.log
+*.dump
+.DS_Store
+erl_crash.dump
+
+# ignore elixir build artifacts and dependencies
+/_build/
+/deps/
+/cover/
+/doc/
+/tmp/
+/release/
+
+# ignore local environment and secret configs
+.env
+.env.*
+.env.*.local
+
+config/*.secret.exs
+config/*.local.exs
+config/runtime.secret.exs
+
+# ignore local files configurations
+.vscode/
+.zed/
+.idea/
+.history/
+.elixir_ls/
+
+# allow miscellaneous files
+!.env.example
+!.env.test

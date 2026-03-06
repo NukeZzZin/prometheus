@@ -1,0 +1,64 @@
+services:
+  prometheus_postgres:
+    image: postgres:16-alpine
+    container_name: prometheus_postgres
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+      POSTGRES_DB: ${POSTGRES_DB}
+    volumes:
+      - postgres_database:/var/lib/postgresql/data
+      - ./docker/postgresql.conf:/etc/postgresql/postgresql.conf
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: >
+      postgres -c config_file=/etc/postgresql/postgresql.conf
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 2500M
+    ports:
+      - "5432:5432"
+
+  prometheus_redis:
+    image: redis:8-alpine
+    container_name: prometheus_redis
+    restart: unless-stopped
+    environment:
+      REDIS_PASSWORD: ${REDIS_PASSWORD}
+    volumes:
+      - redis_database:/data
+      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
+    healthcheck:
+      test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
+    command: >
+      redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    networks:
+      - internal
+    deploy:
+      resources:
+        limits:
+          memory: 2500M
+    ports:
+      - "6379:6379"
+
+volumes:
+  postgres_database:
+    name: postgres_database
+  redis_database:
+    name: redis_database
+
+networks:
+  internal:
+    driver: bridge

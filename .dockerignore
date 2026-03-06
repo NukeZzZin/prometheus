@@ -1,0 +1,20 @@
+# ignore temporary files
+*.swp
+*.swo
+*.DS_Store
+*.bak
+*.tmp
+*.log
+
+# ignore elixir build artifacts and dependencies
+/cover
+/deps
+/doc
+/_build
+/tmp
+
+# ignore local files configurations
+.vscode/*
+.history/*
+.idea/*
+.elixir_ls/*
