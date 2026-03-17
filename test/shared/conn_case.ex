@@ -12,8 +12,8 @@ defmodule PrometheusEntry.Test.ConnCase do
     end
   end
 
-  setup tags do
-    Prometheus.Test.DataCase.setup_sandbox(tags)
+  setup contenxt do
+    Prometheus.Test.DataCase.setup_sandbox(contenxt)
     {:ok, conn: Phoenix.ConnTest.build_conn()}
   end
 end

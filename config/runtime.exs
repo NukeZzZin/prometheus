@@ -1,54 +1,61 @@
 import Config
 
-if System.get_env("PHX_SERVER") do
+env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand(".")
+Dotenvy.source!([
+    Path.absname(".env", env_dir_prefix),
+    Path.absname(".env.#{config_env()}", env_dir_prefix),
+    System.get_env()
+], require_files: [Path.absname(".env", env_dir_prefix)])
+
+config :joken,
+  default_signer: Joken.Signer.create("HS256", Dotenvy.env!("JWT_SECRET_KEY", :string!))
+
+config :argon2_elixir,
+  argon2_type: 2, t_cost: 2, m_cost: 16,
+  parallelism: Dotenvy.env!("ARGON_THREADS", :integer, div(System.schedulers_online(), 2))
+
+config :snowflake,
+  epoch: 1_767_268_800,
+  machine_id: :erlang.phash2(Node.self(), 1024)
+
+if Dotenvy.env!("PHX_SERVER", :boolean, false) do
   config :prometheus, PrometheusEntry.Endpoint, server: true
 end
 
-config :prometheus, PrometheusEntry.Endpoint,
-  http: [port: String.to_integer(System.get_env("PORT", "4000"))]
+case Dotenvy.env!("DATABASE_URL", :string?, nil) do
+  nil ->
+    config :prometheus, Prometheus.Repository,
+      username: Dotenvy.env!("POSTGRES_USER", :string, "postgres"),
+      password: Dotenvy.env!("POSTGRES_PASSWORD", :string, "postgres"),
+      hostname: Dotenvy.env!("POSTGRES_HOST", :string, "localhost"),
+      port: Dotenvy.env!("POSTGRES_PORT", :integer, 5432),
+      pool_size: Dotenvy.env!("POSTGRES_POOL_SIZE", :integer, System.schedulers_online() * 2)
 
-config :joken,
-  default_signer: System.get_env("JWT_SECRET")
+  database_url ->
+    config :prometheus, Prometheus.Repository,
+      url: database_url,
+      socket_options: if(Dotenvy.env!("ECTO_IPV6", :boolean, false), do: [:inet6], else: []),
+      pool_size: Dotenvy.env!("POSTGRES_POOL_SIZE", :integer, System.schedulers_online() * 2)
+end
 
+config :prometheus, Prometheus.Redis,
+  host: Dotenvy.env!("REDIS_HOST", :string, "localhost"),
+  password: Dotenvy.env!("REDIS_PASSWORD", :string, "redis"),
+  port: Dotenvy.env!("REDIS_PORT", :integer, 6379),
+  pool_size: Dotenvy.env!("REDIS_POOL_SIZE", :integer, System.schedulers_online() * 2)
 
-config :argon2_elixir,
-  argon2_type: 2,
-  t_cost: 2,
-  m_cost: 16,
-  parallelism: String.to_integer(System.get_env("ARGON_THREADS") || "#{System.schedulers_online()}")
+case config_env() do
+  :dev ->
+    config :prometheus, Prometheus.Repository,
+      database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_dev")
 
-config :snowflake,
-  nodes: ["127.0.0.1", "prometheus@nodehost"],
-  epoch: 1_770_864_148_694
+  :prod ->
+    config :prometheus, PrometheusEntry.Endpoint,
+      url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
+      http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: Dotenvy.env!("PORT", :integer, 4000)],
+      secret_key_base: Dotenvy.env!("SECRET_KEY_BASE", :string!)
 
-if config_env() == :prod do
-  database_url =
-    System.get_env("DATABASE_URL") ||
-      raise "environment variable DATABASE_URL is missing.\nFor example: ecto://USER:PASS@HOST/DATABASE"
-
-  maybe_ipv6 = if System.get_env("ECTO_IPV6") in ~w(true 1), do: [:inet6], else: []
-
-  config :prometheus, Prometheus.Redis,
-    pool_size: String.to_integer(System.get_env("POSTGRES_POOL_SIZE") || "#{System.schedulers_online() * 2}"),
-    redis: [
-      host: System.get_env("REDIS_HOST", "localhost"),
-      port: String.to_integer(System.get_env("REDIS_PORT", "6379")),
-      password: System.get_env("REDIS_PASSWORD", "redis")
-    ]
-
-  config :prometheus, Prometheus.Repository,
-    url: database_url,
-    pool_size: String.to_integer(System.get_env("POSTGRES_POOL_SIZE") || "#{System.schedulers_online() * 2}"),
-    socket_options: maybe_ipv6
-
-  secret_base =
-    System.get_env("SECRET_BASE") ||
-      raise "environment variable SECRET_BASE is missing.\nYou can generate one by calling: mix phx.gen.secret"
-
-  host = System.get_env("PHX_HOST") || "example.com"
-
-  config :prometheus, PrometheusEntry.Endpoint,
-    url: [host: host, port: 443, scheme: "https"],
-    http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}],
-    secret_key_base: secret_base
+  :test ->
+    config :prometheus, Prometheus.Repository,
+      database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_test") <> Dotenvy.env!("MIX_TEST_PARTITION", :string, "1")
 end

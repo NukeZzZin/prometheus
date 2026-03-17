@@ -3,14 +3,22 @@
     %{
       name: "default",
       files: %{
-        included: ["lib/", "test/"],
-        excluded: [~r"/_build/", ~r"/deps/", ~r"/node_modules/"]
+        included: [
+          "lib/",
+          "test/"
+        ],
+        excluded: [
+          ~r"/_build/",
+          ~r"/deps/",
+          ~r"/node_modules/",
+          ~r"/priv/static/"
+        ]
       },
       plugins: [],
       requires: [],
       check_for_updates: true,
-      strict: false,
-      parse_timeout: 5000,
+      strict: true,
+      parse_timeout: 15_000,
       color: true,
       checks: %{
         enabled: [
@@ -28,7 +36,7 @@
           {Credo.Check.Design.DuplicatedCode, []},
           {Credo.Check.Design.SkipTestWithoutComment, []},
           {Credo.Check.Design.TagFIXME, []},
-          {Credo.Check.Design.TagTODO, [exit_status: 2]},
+          {Credo.Check.Design.TagTODO, [priority: :low]},
 
           # * === Readability Checks === * #
           {Credo.Check.Readability.AliasAs, []},
@@ -55,7 +63,6 @@
           {Credo.Check.Readability.SingleFunctionToBlockPipe, []},
           {Credo.Check.Readability.SinglePipe, []},
           {Credo.Check.Readability.Specs, []},
-          {Credo.Check.Readability.StrictModuleLayout, []},
           {Credo.Check.Readability.StringSigils, []},
           {Credo.Check.Readability.TrailingBlankLine, []},
           {Credo.Check.Readability.TrailingWhiteSpace, []},
@@ -65,6 +72,7 @@
           {Credo.Check.Readability.WithSingleClause, []},
 
           # * === Refactoring Opportunities === * #
+          {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.Apply, []},
           {Credo.Check.Refactor.ABCSize, [max_size: 40]},
           {Credo.Check.Refactor.CondStatements, []},
@@ -80,7 +88,7 @@
           {Credo.Check.Refactor.MatchInCondition, []},
           {Credo.Check.Refactor.NegatedConditionsInUnless, []},
           {Credo.Check.Refactor.NegatedConditionsWithElse, []},
-          {Credo.Check.Refactor.Nesting, []},
+          {Credo.Check.Refactor.Nesting, [max_nesting: 2]},
           {Credo.Check.Refactor.RedundantWithClauseResult, []},
           {Credo.Check.Refactor.RejectReject, []},
           {Credo.Check.Refactor.UnlessWithElse, []},
@@ -113,7 +121,31 @@
           {Credo.Check.Warning.UnusedRegexOperation, []},
           {Credo.Check.Warning.UnusedStringOperation, []},
           {Credo.Check.Warning.UnusedTupleOperation, []},
-          {Credo.Check.Warning.WrongTestFileExtension, []}
+          {Credo.Check.Warning.WrongTestFileExtension, []},
+
+          # * === Strict Module Layout === * #
+          {Credo.Check.Readability.StrictModuleLayout,
+            [
+              order: [
+                :moduledoc,
+                :shortdoc,
+                :behaviour,
+                :use,
+                :import,
+                :alias,
+                :require,
+                :module_attribute,
+                :struct,
+                :type,
+                :opaque,
+                :callback,
+                :macro,
+                :callback_impl,
+                :public_fun,
+                :private_fun
+              ]
+            ]
+          },
         ],
         disabled: [
           {Credo.Check.Warning.LazyLogging, []}

@@ -10,47 +10,56 @@ defmodule Prometheus.Utils.TokenUtil do
 
   @impl Joken.Config
   def token_config do
-    with now <- Joken.current_time() do
+    with current_time <- Joken.current_time() do
       default_claims()
       |> add_claim("iss", fn -> @issuer end, &(&1 == @issuer))
       |> add_claim("aud", fn -> @audience end, &(&1 == @audience))
       |> add_claim("sub", nil, &is_binary/1)
       |> add_claim("typ", nil, &(&1 in ["access", "refresh"]))
-      |> add_claim("exp", nil, fn (exp) -> (is_integer(exp) and exp + @clock_skew > now) end)
-      |> add_claim("nbf", fn -> now end, fn (nbf) -> (is_integer(nbf) and nbf <= now + @clock_skew) end)
+      |> add_claim("jti", nil, &is_binary/1)
+      |> add_claim("exp", nil, &(is_integer(&1) and &1 > current_time - @clock_skew))
+      |> add_claim("nbf", nil, &(is_integer(&1) and &1 <= current_time + @clock_skew))
     end
   end
 
-  @spec generate_access_token(pos_integer()) :: {:ok, binary(), %{binary() => term()}} | {:error, atom()}
-  def generate_access_token(subject) when is_integer(subject) and subject > 0 do
-    case generate_and_sign(%{
-      "sub" => Integer.to_string(subject),
-      "typ" => "access",
-      "exp" => Joken.current_time() + @access_expiration
-    }) do
-      {:ok, bearer_token, claims} ->
+  @spec generate_access_token(pos_integer()) ::
+    {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
+  def generate_access_token(subject) when is_integer(subject) do
+    with current_time <- Joken.current_time(),
+      {:ok, bearer_token, claims} <- generate_and_sign(%{
+        "sub" => Integer.to_string(subject),
+        "typ" => "access",
+        "jti" => Joken.generate_jti(),
+        "exp" => current_time + @access_expiration,
+        "nbf" => current_time
+      }) do
         {:ok, bearer_token, claims}
-      {:error, _reason} ->
-        {:error, :token_generation_failed}
+    else
+      _ ->
+        {:error, :internal_server_error}
     end
   end
 
-  @spec generate_refresh_token(pos_integer()) :: {:ok, binary(), %{binary() => term()}} | {:error, term()}
+  @spec generate_refresh_token(pos_integer()) ::
+    {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
   def generate_refresh_token(subject) when is_integer(subject) do
-    case generate_and_sign(%{
-      "sub" => Integer.to_string(subject),
-      "typ" => "refresh",
-      "jti" => Joken.generate_jti(),
-      "exp" => Joken.current_time() + @refresh_expiration
-    }) do
-      {:ok, bearer_token, claims} ->
+    with current_time <- Joken.current_time(),
+      {:ok, bearer_token, claims} <- generate_and_sign(%{
+        "sub" => Integer.to_string(subject),
+        "typ" => "refresh",
+        "jti" => Joken.generate_jti(),
+        "exp" => current_time + @refresh_expiration,
+        "nbf" => current_time
+      }) do
         {:ok, bearer_token, claims}
-      {:error, _reason} ->
-        {:error, :token_generation_failed}
+    else
+      _ ->
+        {:error, :internal_server_error}
     end
   end
 
-  @spec generate_tuple_token(pos_integer()) :: {:ok, binary(), %{binary() => term()}, binary(), %{binary() => term()}} | {:error, term()}
+  @spec generate_tuple_token(pos_integer()) ::
+    {:ok, Joken.bearer_token(), Joken.claims(), Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
   def generate_tuple_token(identifier) when is_integer(identifier) do
     with {:ok, access_token, access_claims} <- generate_access_token(identifier),
       {:ok, refresh_token, refresh_claims} <- generate_refresh_token(identifier) do
@@ -61,7 +70,8 @@ defmodule Prometheus.Utils.TokenUtil do
     end
   end
 
-  @spec verify_access_token(binary()) :: {:ok, %{binary() => term()}} | {:error, term()}
+  @spec verify_access_token(Joken.bearer_token()) ::
+    {:ok, Joken.claims()} | {:error, :invalid_access_token}
   def verify_access_token(payload) when is_binary(payload) do
     with {:ok, %{"typ" => "access", "sub" => subject} = claims} <- verify_and_validate(payload),
       {identifier, _} <- Integer.parse(subject) do
@@ -71,7 +81,8 @@ defmodule Prometheus.Utils.TokenUtil do
     end
   end
 
-  @spec verify_refresh_token(binary()) ::{:ok, %{binary() => term()}} | {:error, term()}
+  @spec verify_refresh_token(Joken.bearer_token()) ::
+    {:ok, Joken.claims()} | {:error, :invalid_refresh_token}
   def verify_refresh_token(payload) when is_binary(payload) do
     with {:ok, %{"typ" => "refresh", "sub" => subject} = claims} <- verify_and_validate(payload),
       {identifier, _} <- Integer.parse(subject) do

@@ -9,21 +9,20 @@ services:
       POSTGRES_DB: ${POSTGRES_DB}
     volumes:
       - postgres_database:/var/lib/postgresql/data
-      - ./docker/postgresql.conf:/etc/postgresql/postgresql.conf
+      - ./docker/postgresql.conf:/etc/postgresql/postgresql.conf:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER} -d ${POSTGRES_DB}"]
+      test: ["CMD-SHELL", "pg_isready -U $$POSTGRES_USER -d $$POSTGRES_DB || exit 1"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    command: >
-      postgres -c config_file=/etc/postgresql/postgresql.conf
+    command: postgres -c config_file=/etc/postgresql/postgresql.conf
     networks:
       - internal
     deploy:
       resources:
         limits:
-          memory: 2500M
+          memory: 2048M
     ports:
       - "5432:5432"
 
@@ -35,21 +34,20 @@ services:
       REDIS_PASSWORD: ${REDIS_PASSWORD}
     volumes:
       - redis_database:/data
-      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf
+      - ./docker/redis.conf:/usr/local/etc/redis/redis.conf:ro
     healthcheck:
       test: ["CMD", "redis-cli", "-a", "${REDIS_PASSWORD}", "ping"]
       interval: 10s
       timeout: 5s
       retries: 5
       start_period: 10s
-    command: >
-      redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
+    command: redis-server /usr/local/etc/redis/redis.conf --requirepass ${REDIS_PASSWORD}
     networks:
       - internal
     deploy:
       resources:
         limits:
-          memory: 2500M
+          memory: 2048M
     ports:
       - "6379:6379"
 
