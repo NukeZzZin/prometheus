@@ -1,5 +1,6 @@
 defmodule Prometheus.Schemas.UserSchema do
   use Ecto.Schema
+
   import Ecto.Changeset
 
   @type t :: %__MODULE__{}
@@ -96,6 +97,7 @@ defmodule Prometheus.Schemas.UserSchema do
         changeset
     end
   end
+  defp put_password_hash(changeset), do: changeset
 
   @spec put_snowflake_id(Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp put_snowflake_id(%Ecto.Changeset{valid?: true} = changeset) do

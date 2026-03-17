@@ -7,17 +7,11 @@ config :prometheus,
 config :prometheus, PrometheusEntry.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
-  render_errors: [
-    # formats: [json: PrometheusEntry.Controllers.ErrorJSON],
-    layout: false
-  ],
-  pubsub_server: Prometheus.PubSub,
-  live_view: [signing_salt: "WvWUoAcwBceLeJSusD"]
+  pubsub_server: Prometheus.PubSub
 
-config :logger, :default_formatter,
-  format: "$time $metadata[$level] $message\n",
-  metadata: [:request_id]
-
+config :logger, :console,
+  format: "$time [$level] ($metadata\0node=$node) - $message\n", metadata: [:request_id],
+  colors: [enabled: true, debug: :cyan, info: :green, warn: :yellow, error: :red]
 config :phoenix, :json_library, Jason
 
 import_config "#{config_env()}.exs"

@@ -3,9 +3,9 @@ defmodule PrometheusEntry.Endpoint do
 
   @parsers_options [
     parsers: [:urlencoded, :multipart, :json],
-    pass: ["*/*"],
+    pass: ["application/json"],
     json_decoder: Phoenix.json_library(),
-    length: 20_000_000 # * (20*1024*1024=20000000) bytes - 20 megabytes
+    length: 20_971_520 # * (20*1024*1024=20971520) bytes - 20 megabytes
   ]
 
   @cors_options [

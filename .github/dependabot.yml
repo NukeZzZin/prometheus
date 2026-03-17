@@ -13,7 +13,7 @@ updates:
       prefix-development: "chore(deps-dev): update"
       include: "scope"
     groups:
-      - name: "github-actions"
+      github-actions:
         patterns:
           - "*"
     rebase-strategy: "auto"
@@ -33,6 +33,10 @@ updates:
       prefix: "chore(deps): update"
       prefix-development: "chore(deps-dev): update"
       include: "scope"
+    groups:
+      elixir-deps:
+        patterns:
+          - "*"
     versioning-strategy: "auto"
     allow:
       - dependency-type: "direct"
