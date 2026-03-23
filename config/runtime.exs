@@ -61,13 +61,14 @@ case config_env() do
     config :prometheus, Prometheus.Repository,
       database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_dev")
 
-    config :prometheus, Prometheus.Endpoint, http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
+    config :prometheus, PrometheusEntry.Endpoint,
+      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
 
   :prod ->
     config :prometheus, Prometheus.Repository,
       database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_prod")
 
-    config :prometheus, Prometheus.Endpoint,
+    config :prometheus, PrometheusEntry.Endpoint,
       http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: phoenix_server_port],
       url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
       secret_key_base: Dotenvy.env!("SECRET_KEY_BASE", :string!)
@@ -78,6 +79,6 @@ case config_env() do
         Dotenvy.env!("POSTGRES_DB", :string, "prometheus_test") <>
           Dotenvy.env!("MIX_TEST_PARTITION", :string, "1")
 
-    config :prometheus, Prometheus.Endpoint, http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
-
+    config :prometheus, PrometheusEntry.Endpoint,
+      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
 end

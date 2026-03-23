@@ -15,6 +15,8 @@ defmodule Prometheus.Contexts.AccountContext do
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
+      _ ->
+        {:error, :internal_server_error}
     end
   end
 

@@ -12,10 +12,10 @@ defmodule PrometheusEntry.Router do
   scope "/api/v1", PrometheusEntry.Controllers do
     pipe_through [:api]
 
-    post "/register", AuthController, :register
-    post "/login", AuthController, :login
+    post "/auth/register", AuthController, :register
+    post "/auth/login", AuthController, :login
 
-    post "/refresh", SessionController, :refresh
+    post "/session/refresh", SessionController, :refresh
   end
 
   scope "/api/v1", PrometheusEntry.Controllers do
