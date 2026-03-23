@@ -3,7 +3,7 @@ defmodule PrometheusEntry.Controllers.AuthController do
 
   alias Prometheus.Contexts.AccountContext
 
-  def register(connection, parameters) when is_map(parameters) and map_size(parameters) > 0 do
+  def register(connection, parameters) do
     case AccountContext.register_user(parameters) do
       {:ok, tokens} ->
         connection
@@ -13,14 +13,18 @@ defmodule PrometheusEntry.Controllers.AuthController do
         connection
         |> put_status(:unprocessable_entity)
         |> json(%{success: false, errors: format_changeset_errors(changeset)})
+      # _ ->
+        # connection
+        # |> put_status(:internal_server_error)
+        # |> json(%{success: false, errors: [%{code: "INTERNAL_SERVER_ERROR", message: "Unexpected error"}]})
     end
   end
 
-  def register(connection, _invalid) do
-    connection
-    |> put_status(:bad_request)
-    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
-  end
+  # def register(connection, _invalid) do
+  #   connection
+  #   |> put_status(:bad_request)
+  #   |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
+  # end
 
   def login(connection, %{"identifier" => identifier, "password" => password}) do
     case AccountContext.login_user(identifier, password) do
@@ -42,17 +46,17 @@ defmodule PrometheusEntry.Controllers.AuthController do
   end
 
   # * === Helpers === * #
+
   defp format_changeset_errors(changeset) do
     Ecto.Changeset.traverse_errors(changeset, fn {message, options} ->
       Enum.reduce(options, message, fn {key, value}, callback ->
-        String.replace(callback, "%{#{key}}", to_string(value))
+        String.replace(callback, "%{#{key}}", inspect(value))
       end)
     end)
-    |> Enum.map(fn {field, messages} ->
+    |> Enum.flat_map(fn {field, messages} ->
       Enum.map(messages, fn message ->
         %{field: field, code: "VALIDATION_ERROR", message: message}
       end)
     end)
-    |> List.flatten()
   end
 end

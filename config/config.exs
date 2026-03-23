@@ -6,8 +6,8 @@ config :prometheus,
 
 config :prometheus, PrometheusEntry.Endpoint,
   url: [host: "localhost"],
-  adapter: Bandit.PhoenixAdapter
-  # pubsub_server: Prometheus.PubSub
+  adapter: Bandit.PhoenixAdapter,
+  pubsub_server: Prometheus.PubSub
 
 config :logger, :console,
   format: "$time [$level] ($metadata) node=$node - $message\n",
