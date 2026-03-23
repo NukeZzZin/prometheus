@@ -17,7 +17,7 @@ defmodule PrometheusEntry.Middlewares.AuthMiddleware do
       _ ->
         connection
         |> put_resp_content_type("application/json")
-        |> send_resp(:unauthorized, "")
+        |> send_resp(:unauthorized, Jason.encode!(%{success: false, errors: [%{code: "INVALID_CREDENTIALS", message: "Invalid credentials"}]}))
         |> halt()
     end
   end

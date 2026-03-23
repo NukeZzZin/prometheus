@@ -6,12 +6,14 @@ config :prometheus,
 
 config :prometheus, PrometheusEntry.Endpoint,
   url: [host: "localhost"],
-  adapter: Bandit.PhoenixAdapter,
-  pubsub_server: Prometheus.PubSub
+  adapter: Bandit.PhoenixAdapter
+  # pubsub_server: Prometheus.PubSub
 
 config :logger, :console,
-  format: "$time [$level] ($metadata\0node=$node) - $message\n", metadata: [:request_id],
+  format: "$time [$level] ($metadata) node=$node - $message\n",
+  metadata: [:request_id],
   colors: [enabled: true, debug: :cyan, info: :green, warn: :yellow, error: :red]
+
 config :phoenix, :json_library, Jason
 
 import_config "#{config_env()}.exs"

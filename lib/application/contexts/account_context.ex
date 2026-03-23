@@ -10,8 +10,8 @@ defmodule Prometheus.Contexts.AccountContext do
     {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, Ecto.Changeset.t()}
   def register_user(attributes) when is_map(attributes) do
     with {:ok, %UserSchema{} = user} <- Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)),
-      {:ok, %{access_token: access_token, refresh_token: refresh_token}} <- SessionContext.create_session(user.id) do
-        {:ok, %{access_token: access_token, refresh_token: refresh_token}}
+      {:ok, tokens_callback} <- SessionContext.create_session(user.id) do
+        {:ok, tokens_callback}
     else
       {:error, %Ecto.Changeset{} = changeset} ->
         {:error, changeset}
@@ -23,8 +23,8 @@ defmodule Prometheus.Contexts.AccountContext do
   def login_user(identifier, password) when is_binary(password) do
     with {:ok, %UserSchema{} = user} <- get_user_by_identifier(identifier),
       true <- Argon2.verify_pass(password, user.password_hash),
-      {:ok, %{access_token: access_token, refresh_token: refresh_token}} <- SessionContext.create_session(user.id) do
-        {:ok, %{access_token: access_token, refresh_token: refresh_token}}
+      {:ok, tokens_callback} <- SessionContext.create_session(user.id) do
+        {:ok, tokens_callback}
       else
         false ->
           Argon2.no_user_verify()
