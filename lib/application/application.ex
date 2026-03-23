@@ -6,8 +6,7 @@ defmodule Prometheus.Application do
     children = [
       Prometheus.Repository,
       Prometheus.Redis,
-      {Phoenix.PubSub, name: Prometheus.PubSub},
-      PrometheusEntry.Telemetry,
+      # {Phoenix.PubSub, name: Prometheus.PubSub},
       PrometheusEntry.Endpoint
     ]
     options = [strategy: :one_for_one, name: Prometheus.Supervisor]

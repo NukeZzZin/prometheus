@@ -62,8 +62,8 @@ defmodule Prometheus.Mix do
       {:redix, "~> 1.5.3"},
 
       # * === Dependencies for telemetry and monitoring === * #
-      {:telemetry_metrics, "~> 1.1.0"},
-      {:telemetry_poller, "~> 1.3.0"},
+      # {:telemetry_metrics, "~> 1.1.0"},
+      # {:telemetry_poller, "~> 1.3.0"},
 
       # * === Dependencies for environment variables === * #
       {:dotenvy, "~> 1.1.1"},
