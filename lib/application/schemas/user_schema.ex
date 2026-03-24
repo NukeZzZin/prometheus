@@ -3,11 +3,11 @@ defmodule Prometheus.Schemas.UserSchema do
 
   import Ecto.Changeset
 
-  @type t :: %__MODULE__{}
-
   @primary_key {:id, :integer, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
   @derive {Jason.Encoder, only: [:id, :username, :display_name, :email]}
+
+  @type t :: %__MODULE__{}
 
   schema "users" do
     field :username, :string

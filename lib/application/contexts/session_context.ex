@@ -5,7 +5,7 @@ defmodule Prometheus.Contexts.SessionContext do
   @refresh_expiration 604_800 # * (7*24*60*60=604800) seconds - 7 days
 
   @spec create_session(pos_integer()) ::
-    {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, :internal_server_error}
+    {:ok, %{atom() => Joken.bearer_token()}} | {:error, :internal_server_error}
   def create_session(identifier) when is_integer(identifier) do
     with {:ok, access_token, _, refresh_token, refresh_claims} <- TokenUtil.generate_tuple_token(identifier),
       {:ok, :stored_session} <- store_refresh_session(refresh_claims["jti"], refresh_claims["sub"]) do
@@ -17,7 +17,7 @@ defmodule Prometheus.Contexts.SessionContext do
   end
 
   @spec rotate_session(Joken.bearer_token()) ::
-    {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, :internal_server_error}
+    {:ok, %{atom() => Joken.bearer_token()}} | {:error, :internal_server_error}
   def rotate_session(old_token) when is_binary(old_token) do
     with {:ok, old_claims} <- TokenUtil.verify_refresh_token(old_token),
       {:ok, :deleted_session} <- delete_refresh_session(old_claims["jti"]),
@@ -43,7 +43,7 @@ defmodule Prometheus.Contexts.SessionContext do
   end
 
   # * === Helpers === * #
-  @spec store_refresh_session(binary(), pos_integer()) ::
+  @spec store_refresh_session(String.t(), pos_integer()) ::
     {:ok, :stored_session} | {:error, :internal_server_error}
   defp store_refresh_session(refresh_identifier, identifier) when is_binary(refresh_identifier) do
     case Redis.command(["SET", "refresh_session:#{refresh_identifier}", identifier, "NX", "EX", @refresh_expiration]) do
@@ -54,7 +54,7 @@ defmodule Prometheus.Contexts.SessionContext do
     end
   end
 
-  @spec delete_refresh_session(binary()) ::
+  @spec delete_refresh_session(String.t()) ::
     {:ok, :deleted_session} | {:error, :internal_server_error}
   defp delete_refresh_session(refresh_identifier) when is_binary(refresh_identifier) do
     case Redis.command(["GETDEL", "refresh_session:#{refresh_identifier}"]) do

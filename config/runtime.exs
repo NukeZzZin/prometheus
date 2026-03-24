@@ -12,7 +12,7 @@ Dotenvy.source!(
 )
 
 config :joken,
-  default_signer: Joken.Signer.create("HS256", Dotenvy.env!("JWT_SECRET_KEY", :string!))
+  default_signer: Dotenvy.env!("JWT_SECRET_KEY", :string!)
 
 config :argon2_elixir,
   argon2_type: 2,
