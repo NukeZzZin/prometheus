@@ -5,7 +5,7 @@ defmodule PrometheusEntry.Endpoint do
     parsers: [:urlencoded, :multipart, :json],
     pass: ["application/json"],
     json_decoder: Phoenix.json_library(),
-    length: 20_971_520 # * (20*1024*1024=20971520) bytes - 20 megabytes
+    length: 20_971_520 # ! (20*1024*1024=20971520) bytes - 20 megabytes
   ]
 
   @cors_options [
@@ -13,11 +13,10 @@ defmodule PrometheusEntry.Endpoint do
     allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers: ["authorization", "content-type", "accept"],
     allow_credentials: true,
-    max_age: 86_400 # * (24*60*60=86400) seconds - 1 day
+    max_age: 86_400 # ! (24*60*60=86400) seconds - 1 day
   ]
 
   plug Plug.RequestId
-  # plug Plug.Telemetry, event_prefix: [:phoenix, :endpoint]
   plug Plug.Logger
 
   plug Plug.Parsers, @parsers_options

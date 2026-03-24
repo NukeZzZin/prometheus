@@ -22,7 +22,7 @@
       color: true,
       checks: %{
         enabled: [
-           # * === Consistency Checks === * #
+           # ! === Consistency Checks === ! #
           {Credo.Check.Consistency.ExceptionNames, []},
           {Credo.Check.Consistency.LineEndings, []},
           {Credo.Check.Consistency.MultiAliasImportRequireUse, []},
@@ -31,14 +31,14 @@
           {Credo.Check.Consistency.SpaceInParentheses, []},
           {Credo.Check.Consistency.TabsOrSpaces, []},
 
-          # * === Design Checks === * #
+          # ! === Design Checks === ! #
           {Credo.Check.Design.AliasUsage, [priority: :low, if_nested_deeper_than: 2, if_called_more_often_than: 2]},
           {Credo.Check.Design.DuplicatedCode, []},
           {Credo.Check.Design.SkipTestWithoutComment, []},
           {Credo.Check.Design.TagFIXME, []},
           {Credo.Check.Design.TagTODO, [priority: :low]},
 
-          # * === Readability Checks === * #
+          # ! === Readability Checks === ! #
           {Credo.Check.Readability.AliasAs, []},
           {Credo.Check.Readability.AliasOrder, []},
           {Credo.Check.Readability.BlockPipe, []},
@@ -71,7 +71,7 @@
           {Credo.Check.Readability.WithCustomTaggedTuple, []},
           {Credo.Check.Readability.WithSingleClause, []},
 
-          # * === Refactoring Opportunities === * #
+          # ! === Refactoring Opportunities === ! #
           {Credo.Check.Refactor.AppendSingleItem, []},
           {Credo.Check.Refactor.Apply, []},
           {Credo.Check.Refactor.ABCSize, [max_size: 40]},
@@ -94,7 +94,7 @@
           {Credo.Check.Refactor.UnlessWithElse, []},
           {Credo.Check.Refactor.WithClauses, []},
 
-          # * === Warnings / Security === * #
+          # ! === Warnings / Security === ! #
           {Credo.Check.Warning.ApplicationConfigInModuleAttribute, []},
           {Credo.Check.Warning.BoolOperationOnSameValues, []},
           {Credo.Check.Warning.Dbg, []},
@@ -123,7 +123,7 @@
           {Credo.Check.Warning.UnusedTupleOperation, []},
           {Credo.Check.Warning.WrongTestFileExtension, []},
 
-          # * === Strict Module Layout === * #
+          # ! === Strict Module Layout === ! #
           {Credo.Check.Readability.StrictModuleLayout,
             [
               order: [

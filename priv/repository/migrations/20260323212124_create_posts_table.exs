@@ -6,8 +6,8 @@ defmodule Prometheus.Repository.Migrations.CreatePostsTable do
       add :id, :bigint, primary_key: true
 
       add :title, :string, size: 255, null: false
-      add :content, :string, size: 2000, null: false
-      add :author_id, :bigint, null: false
+      add :content, :string, size: 2_000, null: false
+      add :author_id, references(:users, type: :bigint, on_delete: :delete_all), null: false
 
       timestamps(type: :utc_datetime_usec)
     end

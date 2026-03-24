@@ -17,6 +17,7 @@ defmodule Prometheus.Contexts.PostContext do
     end
   end
 
+  # ! === Public Helpers === ! #
   @spec get_recent_posts(pos_integer()) ::
     {:ok, [PostSchema.t()]} | {:error, :internal_server_error}
   def get_recent_posts(limit \\ 10) when is_integer(limit) and limit > 0 do
@@ -28,53 +29,38 @@ defmodule Prometheus.Contexts.PostContext do
     end
   end
 
-  # @spec update_post(pos_integer(), map())
-  #   :: {:ok, :updated_post} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
-  # def update_post(identifier, attributes) when is_integer(identifier) and identifier > 0 and is_map(attributes) and map_size(attributes) > 0 do
-  #   with {:ok, %PostSchema{} = post} <- get_post_by_identifier(identifier),
-  #     {:ok, _} <- Repository.update(PostSchema.update_post_changeset(post, attributes)) do
-  #       {:ok, :updated_post}
-  #   else
-  #     {:error, :post_not_found} ->
-  #       {:error, :post_not_found}
-  #     _ ->
-  #       {:error, :internal_server_error}
-  #   end
-  # end
-
-  # @spec delete_post(pos_integer())
-  #   :: {:ok, :deleted_post} | {:error, :internal_server_error}
-  # def delete_post(identifier) when is_integer(identifier) and identifier > 0 do
-  #   with {:ok, %PostSchema{} = post} <- get_post_by_identifier(identifier),
-  #     {:ok, _} <- Repository.delete(post) do
-  #       {:ok, :deleted_post}
-  #   else
-  #     {:error, :post_not_found} ->
-  #       {:error, :post_not_found}
-  #     _ ->
-  #       {:error, :internal_server_error}
-  #   end
-  # end
-
-  # @spec get_post_by_title(String.t()) ::
-  #   {:ok, PostSchema.t()} | {:error, :post_not_found}
-  # def get_post_by_title(title) when is_binary(title) and byte_size(title) > 0, do:
-  #   fetch_post_by_query(from subject in PostSchema, where: subject.title == ^title)
-
   @spec get_post_by_identifier(pos_integer()) ::
-    {:ok, PostSchema.t()} | {:error, :post_not_found}
+    {:ok, PostSchema.t()} | {:error, :not_found}
   def get_post_by_identifier(identifier) when is_integer(identifier) and identifier > 0, do:
-    fetch_post_by_query(from subject in PostSchema, where: subject.id == ^identifier)
+    fetch_post_by_query(from subject in PostSchema,
+      where: subject.id == ^identifier, preload: [:author])
 
-  # * === Helpers === * #
+  @spec get_posts_by_author(pos_integer()) ::
+    {:ok, [PostSchema.t()]} | {:error, :not_found}
+  def get_posts_by_author(author_id, limit \\ 10) when is_integer(author_id) and author_id > 0 and is_integer(limit) and limit > 0, do:
+    fetch_posts_by_query(from subject in PostSchema,
+      where: subject.author_id == ^author_id, preload: [:author], order_by: [desc: subject.inserted_at], limit: ^limit)
+
+  # ! === Private Helpers === ! #
+  @spec fetch_posts_by_query(Ecto.Query.t()) ::
+    {:ok, [PostSchema.t()]} | {:error, :not_found}
+  defp fetch_posts_by_query(%Ecto.Query{} = query) do
+    case Repository.all(query) do
+      [] ->
+        {:error, :not_found}
+      records ->
+        {:ok, records}
+    end
+  end
+
   @spec fetch_post_by_query(Ecto.Query.t()) ::
-    {:ok, PostSchema.t()} | {:error, :post_not_found}
+    {:ok, PostSchema.t()} | {:error, :not_found}
   defp fetch_post_by_query(%Ecto.Query{} = query) do
      case Repository.one(query) do
        %PostSchema{} = record ->
          {:ok, record}
        _ ->
-         {:error, :post_not_found}
+         {:error, :not_found}
      end
    end
 end

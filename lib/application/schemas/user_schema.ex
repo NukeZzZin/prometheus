@@ -3,6 +3,8 @@ defmodule Prometheus.Schemas.UserSchema do
 
   import Ecto.Changeset
 
+  # alias Prometheus.Schemas.PostSchema
+
   @primary_key {:id, :integer, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
   @derive {Jason.Encoder, only: [:id, :username, :display_name, :email]}
@@ -17,6 +19,8 @@ defmodule Prometheus.Schemas.UserSchema do
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :password_hash, :string, redact: true
+
+    # has_many :posts, PostSchema, foreign_key: :author_id
 
     timestamps()
   end
@@ -53,7 +57,7 @@ defmodule Prometheus.Schemas.UserSchema do
     |> put_password_hash()
   end
 
-  # * === Helpers === * #
+  # ! === Private Helpers === ! #
   @spec validate_email_field(%__MODULE__{} | Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_email_field(%Ecto.Changeset{} = changeset) do
     changeset

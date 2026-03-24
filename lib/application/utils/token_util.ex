@@ -4,9 +4,9 @@ defmodule Prometheus.Utils.TokenUtil do
   @issuer "Prometheus-Backend"
   @audience "Prometheus-Frontend"
 
-  @access_expiration 900 # * (15*60=900) seconds - 15 minutes
-  @refresh_expiration 604_800 # * (7*24*60*60=604800) seconds - 7 days
-  @clock_skew 15 # * clock skew tolerance in seconds
+  @access_expiration 900 # ! (15*60=900) seconds - 15 minutes
+  @refresh_expiration 604_800 # ! (7*24*60*60=604800) seconds - 7 days
+  @clock_skew 15 # ! clock skew tolerance in seconds
 
   @impl Joken.Config
   def token_config do

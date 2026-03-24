@@ -6,9 +6,7 @@ config :prometheus, Prometheus.Repository,
 
 config :prometheus, PrometheusEntry.Endpoint,
   check_origin: false,
-  debug_errors: true,
-  secret_key_base: "h7iDvAAe6ZmiDScaEqZKm5bU1C40X4gl/eiok9XPjFgOeINuiFr/04L94VXCuKrJ",
-  watchers: []
+  debug_errors: true
 
 config :logger, :console,
   level: :debug,

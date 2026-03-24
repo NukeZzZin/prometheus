@@ -80,7 +80,7 @@ defmodule Prometheus.Redis do
   def transaction_pipeline(payload, options \\ []) when is_list(payload),
     do: execute(:transaction_pipeline, payload, options)
 
-  # * === Helpers === * #
+  # ! === Private Helpers === ! #
   @spec execute(atom(), list(), keyword()) :: {:ok, term()} | {:error, term()}
   defp execute(type, payload, options) do
     command_timeout = Keyword.get(options, :command_timeout, @default_command_timeout)

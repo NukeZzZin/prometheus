@@ -1,8 +1,6 @@
 import Config
 
-config :prometheus, PrometheusEntry.Endpoint,
-  secret_key_base: "VChJ95enp7DSD8L6VhWT9u5HOpDM0lR7jadukgfQKE5c1zPECvThwkcGYOLLyBW+",
-  server: false
+config :prometheus, PrometheusEntry.Endpoint, server: false
 
 config :logger, :console,
   level: :warning,
