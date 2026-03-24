@@ -10,31 +10,28 @@ defmodule Prometheus.Utils.TokenUtil do
 
   @impl Joken.Config
   def token_config do
-    with current_time <- Joken.current_time() do
-      default_claims()
-      |> add_claim("iss", fn -> @issuer end, &(&1 == @issuer))
-      |> add_claim("aud", fn -> @audience end, &(&1 == @audience))
-      |> add_claim("sub", nil, &is_binary/1)
-      |> add_claim("typ", nil, &(&1 in ["access", "refresh"]))
-      |> add_claim("jti", nil, &is_binary/1)
-      |> add_claim("exp", nil, &(is_integer(&1) and &1 > current_time - @clock_skew))
-      |> add_claim("nbf", nil, &(is_integer(&1) and &1 <= current_time + @clock_skew))
-    end
+    current_time = Joken.current_time()
+    default_claims()
+    |> add_claim("iss", fn -> @issuer end, &(&1 == @issuer))
+    |> add_claim("aud", fn -> @audience end, &(&1 == @audience))
+    |> add_claim("sub", nil, &is_binary/1)
+    |> add_claim("typ", nil, &(&1 in ["access", "refresh"]))
+    |> add_claim("jti", nil, &is_binary/1)
+    |> add_claim("exp", nil, &(is_integer(&1) and &1 > current_time - @clock_skew))
+    |> add_claim("nbf", nil, &(is_integer(&1) and &1 <= current_time + @clock_skew))
   end
 
-  @spec generate_access_token(pos_integer()) ::
-    {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
   def generate_access_token(subject) when is_integer(subject) do
-    with current_time <- Joken.current_time(),
-      {:ok, bearer_token, claims} <- generate_and_sign(%{
-        "sub" => Integer.to_string(subject),
-        "typ" => "access",
-        "jti" => Joken.generate_jti(),
-        "exp" => current_time + @access_expiration,
-        "nbf" => current_time
-      }) do
+    current_time = Joken.current_time()
+    case generate_and_sign(%{
+      "sub" => Integer.to_string(subject),
+      "typ" => "access",
+      "jti" => Joken.generate_jti(),
+      "exp" => current_time + @access_expiration,
+      "nbf" => current_time
+    }) do
+      {:ok, bearer_token, claims} ->
         {:ok, bearer_token, claims}
-    else
       _ ->
         {:error, :internal_server_error}
     end
@@ -43,16 +40,16 @@ defmodule Prometheus.Utils.TokenUtil do
   @spec generate_refresh_token(pos_integer()) ::
     {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
   def generate_refresh_token(subject) when is_integer(subject) do
-    with current_time <- Joken.current_time(),
-      {:ok, bearer_token, claims} <- generate_and_sign(%{
-        "sub" => Integer.to_string(subject),
-        "typ" => "refresh",
-        "jti" => Joken.generate_jti(),
-        "exp" => current_time + @refresh_expiration,
-        "nbf" => current_time
-      }) do
+    current_time = Joken.current_time()
+    case generate_and_sign(%{
+      "sub" => Integer.to_string(subject),
+      "typ" => "refresh",
+      "jti" => Joken.generate_jti(),
+      "exp" => current_time + @refresh_expiration,
+      "nbf" => current_time
+    }) do
+      {:ok, bearer_token, claims} ->
         {:ok, bearer_token, claims}
-    else
       _ ->
         {:error, :internal_server_error}
     end
@@ -71,24 +68,24 @@ defmodule Prometheus.Utils.TokenUtil do
   end
 
   @spec verify_access_token(Joken.bearer_token()) ::
-    {:ok, Joken.claims()} | {:error, :invalid_access_token}
-  def verify_access_token(payload) when is_binary(payload) do
+    {:ok, Joken.claims()} | {:error, :invalid_token}
+  def verify_access_token(payload) when is_binary(payload) and byte_size(payload) > 0 do
     with {:ok, %{"typ" => "access", "sub" => subject} = claims} <- verify_and_validate(payload),
       {identifier, _} <- Integer.parse(subject) do
         {:ok, Map.put(claims, "sub", identifier)}
     else
-      _ -> {:error, :invalid_access_token}
+      _ -> {:error, :invalid_token}
     end
   end
 
   @spec verify_refresh_token(Joken.bearer_token()) ::
-    {:ok, Joken.claims()} | {:error, :invalid_refresh_token}
-  def verify_refresh_token(payload) when is_binary(payload) do
+    {:ok, Joken.claims()} | {:error, :invalid_token}
+  def verify_refresh_token(payload) when is_binary(payload) and byte_size(payload) > 0 do
     with {:ok, %{"typ" => "refresh", "sub" => subject} = claims} <- verify_and_validate(payload),
       {identifier, _} <- Integer.parse(subject) do
         {:ok, Map.put(claims, "sub", identifier)}
     else
-      _ -> {:error, :invalid_refresh_token}
+      _ -> {:error, :invalid_token}
     end
   end
 end

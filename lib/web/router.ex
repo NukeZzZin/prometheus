@@ -6,21 +6,34 @@ defmodule PrometheusEntry.Router do
   end
 
   pipeline :authenticated do
+    plug :accepts, ["json"]
     plug PrometheusEntry.Middlewares.AuthMiddleware
   end
 
   scope "/api/v1", PrometheusEntry.Controllers do
     pipe_through [:api]
 
-    post "/auth/register", AuthController, :register
-    post "/auth/login", AuthController, :login
+    scope "/posts" do
+      get "/", PostController, :list
+      get "/:id", PostController, :get
+    end
 
-    post "/session/refresh", SessionController, :refresh
+    scope "/auth" do
+      post "/register", AccountController, :register
+      post "/login", AccountController, :login
+    end
+
+    scope "/session" do
+      post "/refresh", SessionController, :refresh
+      post "/logout", SessionController, :logout
+    end
   end
 
   scope "/api/v1", PrometheusEntry.Controllers do
-    pipe_through [:api, :authenticated]
+    pipe_through [:authenticated]
 
-    post "/logout", SessionController, :logout
+    scope "/posts" do
+      post "/create", PostController, :create
+    end
   end
 end

@@ -3,12 +3,12 @@ defmodule Prometheus.Contexts.AccountContext do
 
   alias Prometheus.Contexts.SessionContext
   alias Prometheus.Repository
-  alias Prometheus.Utils.TokenUtil
   alias Prometheus.Schemas.UserSchema
+  alias Prometheus.Utils.TokenUtil
 
   @spec register_user(map()) ::
-    {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, Ecto.Changeset.t()}
-  def register_user(attributes) when is_map(attributes) do
+    {:ok, %{atom() => Joken.bearer_token()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
+  def register_user(attributes) when is_map(attributes) and map_size(attributes) > 0 do
     with {:ok, %UserSchema{} = user} <- Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)),
       {:ok, tokens_callback} <- SessionContext.create_session(user.id) do
         {:ok, tokens_callback}
@@ -20,8 +20,8 @@ defmodule Prometheus.Contexts.AccountContext do
     end
   end
 
-  @spec login_user(pos_integer() | binary(), binary()) ::
-    {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, :invalid_credentials}
+  @spec login_user(pos_integer() | String.t(), String.t()) ::
+    {:ok, %{atom() => Joken.bearer_token()}} | {:error, :invalid_credentials}
   def login_user(identifier, password) when is_binary(password) do
     with {:ok, %UserSchema{} = user} <- get_user_by_identifier(identifier),
       true <- Argon2.verify_pass(password, user.password_hash),
@@ -36,7 +36,7 @@ defmodule Prometheus.Contexts.AccountContext do
       end
   end
 
-  @spec change_password(Joken.bearer_token(), binary(), binary()) ::
+  @spec change_password(Joken.bearer_token(), String.t(), String.t()) ::
     {:ok, :password_changed} | {:error, :cannot_change_password}
   def change_password(access_token, current_password, new_password) when is_binary(current_password) and is_binary(new_password) do
     with {:ok, access_claims} <- TokenUtil.verify_access_token(access_token),
@@ -58,7 +58,7 @@ defmodule Prometheus.Contexts.AccountContext do
   def get_user_by_identifier(identifier) when is_integer(identifier) and identifier > 0,
     do: fetch_user_by_query(from subject in UserSchema, where: subject.id == ^identifier)
 
-  @spec get_user_by_identifier(binary()) ::
+  @spec get_user_by_identifier(String.t()) ::
     {:ok, UserSchema.t()} | {:error, :user_not_found}
   def get_user_by_identifier(identifier) when is_binary(identifier) and byte_size(identifier) > 0 do
     if String.match?(identifier, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
