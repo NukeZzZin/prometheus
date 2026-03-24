@@ -14,8 +14,13 @@ defmodule PrometheusEntry.Router do
     pipe_through [:api]
 
     scope "/posts" do
-      get "/", PostController, :list
-      get "/:id", PostController, :get
+      get "/", PostController, :list_posts
+      get "/:id", PostController, :get_post
+    end
+
+    scope "/users" do
+      # TODO: Lembra de implementar as rotas para usuarios.
+      get "/:id/posts", PostController, :list_user_posts
     end
 
     scope "/auth" do
@@ -33,7 +38,7 @@ defmodule PrometheusEntry.Router do
     pipe_through [:authenticated]
 
     scope "/posts" do
-      post "/create", PostController, :create
+      post "/create", PostController, :create_post
     end
   end
 end

@@ -27,7 +27,7 @@ defmodule PrometheusEntry.Middlewares.AuthMiddleware do
     end
   end
 
-  # * === Helpers === * #
+  # ! === Private Helpers === ! #
   @spec extract_connection_token(Plug.Conn.t()) ::
     {:ok, Joken.bearer_token()} | {:error, :missing_token}
   defp extract_connection_token(connection) do

@@ -9,8 +9,6 @@ defmodule PrometheusEntry.Controllers.AccountController do
       {:ok, tuple_tokens} ->
         connection
         |> put_status(:created)
-        # |> put_resp_cookie("access_token", tuple_tokens["access_token"])
-        # |> put_resp_cookie("refresh_token", tuple_tokens["refresh_token"])
         |> json(%{success: true, data: tuple_tokens})
       {:error, %Ecto.Changeset{} = changeset} ->
         connection
@@ -32,8 +30,6 @@ defmodule PrometheusEntry.Controllers.AccountController do
       {:ok, tuple_tokens} ->
         connection
         |> put_status(:ok)
-        # |> put_resp_cookie("access_token", tuple_tokens["access_token"])
-        # |> put_resp_cookie("refresh_token", tuple_tokens["refresh_token"])
         |> json(%{success: true, data: tuple_tokens})
       _ ->
         connection
@@ -45,7 +41,7 @@ defmodule PrometheusEntry.Controllers.AccountController do
   def login(connection, _invalid), do:
     send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
 
-  # * === Helpers === * #
+  # ! === Private Helpers === ! #
   @spec format_changeset_errors(Ecto.Changeset.t()) ::
     [%{field: atom(), code: String.t(), message: String.t()}]
   defp format_changeset_errors(changeset) do

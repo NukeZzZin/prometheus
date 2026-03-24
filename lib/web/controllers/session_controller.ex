@@ -9,8 +9,6 @@ defmodule PrometheusEntry.Controllers.SessionController do
       {:ok, new_tuple_tokens} ->
         connection
         |> put_status(:ok)
-        # |> put_resp_cookie("access_token", new_tuple_tokens["access_token"])
-        # |> put_resp_cookie("refresh_token", new_tuple_tokens["refresh_token"])
         |> json(%{success: true, data: new_tuple_tokens})
       _ ->
         connection
@@ -28,8 +26,6 @@ defmodule PrometheusEntry.Controllers.SessionController do
       {:ok, :revoked_session} ->
         connection
         |> put_status(:ok)
-        # |> delete_resp_cookie("access_token")
-        # |> delete_resp_cookie("refresh_token")
         |> json(%{success: true, data: "Revoked session"})
       _ ->
         connection

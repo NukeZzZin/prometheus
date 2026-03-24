@@ -53,28 +53,29 @@ defmodule Prometheus.Contexts.AccountContext do
     end
   end
 
+  # ! === Public Helpers === ! #
   @spec get_user_by_identifier(pos_integer()) ::
-    {:ok, UserSchema.t()} | {:error, :user_not_found}
+    {:ok, UserSchema.t()} | {:error, :not_found}
   def get_user_by_identifier(identifier) when is_integer(identifier) and identifier > 0,
     do: fetch_user_by_query(from subject in UserSchema, where: subject.id == ^identifier)
 
   @spec get_user_by_identifier(String.t()) ::
-    {:ok, UserSchema.t()} | {:error, :user_not_found}
+    {:ok, UserSchema.t()} | {:error, :not_found}
   def get_user_by_identifier(identifier) when is_binary(identifier) and byte_size(identifier) > 0 do
     if String.match?(identifier, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
       do: fetch_user_by_query(from subject in UserSchema, where: subject.email == ^identifier),
       else: fetch_user_by_query(from subject in UserSchema, where: subject.username == ^identifier)
   end
 
-   # * === Helpers === * #
+   # ! === Private Helpers === ! #
    @spec fetch_user_by_query(Ecto.Query.t()) ::
-    {:ok, UserSchema.t()} | {:error, :user_not_found}
+    {:ok, UserSchema.t()} | {:error, :not_found}
    defp fetch_user_by_query(%Ecto.Query{} = query) do
      case Repository.one(query) do
        %UserSchema{} = record ->
          {:ok, record}
        _ ->
-         {:error, :user_not_found}
+         {:error, :not_found}
      end
    end
 end

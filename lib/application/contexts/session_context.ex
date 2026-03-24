@@ -2,7 +2,7 @@ defmodule Prometheus.Contexts.SessionContext do
   alias Prometheus.Redis
   alias Prometheus.Utils.TokenUtil
 
-  @refresh_expiration 604_800 # * (7*24*60*60=604800) seconds - 7 days
+  @refresh_expiration 604_800 # ! (7*24*60*60=604800) seconds - 7 days
 
   @spec create_session(pos_integer()) ::
     {:ok, %{atom() => Joken.bearer_token()}} | {:error, :internal_server_error}
@@ -42,7 +42,7 @@ defmodule Prometheus.Contexts.SessionContext do
     end
   end
 
-  # * === Helpers === * #
+  # ! === Private Helpers === ! #
   @spec store_refresh_session(String.t(), pos_integer()) ::
     {:ok, :stored_session} | {:error, :internal_server_error}
   defp store_refresh_session(refresh_identifier, identifier) when is_binary(refresh_identifier) do

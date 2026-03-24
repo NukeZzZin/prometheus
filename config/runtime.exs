@@ -11,8 +11,14 @@ Dotenvy.source!(
   require_files: [Path.absname(".env", env_dir_prefix)]
 )
 
-config :joken,
-  default_signer: Dotenvy.env!("JWT_SECRET_KEY", :string!)
+secret_key_base = Dotenvy.env!("SECRET_KEY_BASE", :string, if(config_env() in [:dev, :test],
+  do: Mix.Tasks.Phx.Gen.Secret.run([]),
+  else: raise"Set SECRET_KEY_BASE in your environment file."))
+jwt_secret_key = Dotenvy.env!("JWT_SECRET_KEY", :string, if(config_env() in [:dev, :test],
+  do: Mix.Tasks.Phx.Gen.Secret.run([]),
+  else: raise"Set JWT_SECRET_KEY in your environment file."))
+
+config :joken, default_signer: jwt_secret_key
 
 config :argon2_elixir,
   argon2_type: 2,
@@ -21,8 +27,8 @@ config :argon2_elixir,
   parallelism: Dotenvy.env!("ARGON_THREADS", :integer, div(System.schedulers_online(), 2))
 
 config :snowflake,
-  epoch: 1_767_268_800,
-  machine_id: :erlang.phash2(Node.self(), 1024)
+  epoch: 1_767_268_800, # ! 2026-01-01 12:00:00 (default)
+  machine_id: Dotenvy.env!("MACHINE_ID", :integer, :erlang.phash2(Node.self(), 1024))
 
 if Dotenvy.env!("PHX_SERVER", :boolean, false) do
   config :prometheus, PrometheusEntry.Endpoint, server: true
@@ -62,7 +68,8 @@ case config_env() do
       database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_dev")
 
     config :prometheus, PrometheusEntry.Endpoint,
-      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
+      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port],
+      secret_key_base: secret_key_base
 
   :prod ->
     config :prometheus, Prometheus.Repository,
@@ -71,7 +78,7 @@ case config_env() do
     config :prometheus, PrometheusEntry.Endpoint,
       http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: phoenix_server_port],
       url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
-      secret_key_base: Dotenvy.env!("SECRET_KEY_BASE", :string!)
+      secret_key_base: secret_key_base
 
   :test ->
     config :prometheus, Prometheus.Repository,
@@ -80,5 +87,6 @@ case config_env() do
           Dotenvy.env!("MIX_TEST_PARTITION", :string, "1")
 
     config :prometheus, PrometheusEntry.Endpoint,
-      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port]
+      http: [ip: {127, 0, 0, 1}, port: phoenix_server_port],
+      secret_key_base: secret_key_base
 end
