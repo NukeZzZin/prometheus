@@ -33,6 +33,7 @@ defmodule PrometheusEntry.Middlewares.AuthMiddleware do
   defp extract_connection_token(connection) do
     case get_req_header(connection, "authorization") do
       ["Bearer " <> bearer_token] ->
+        IO.inspect(bearer_token)
         {:ok, String.trim(bearer_token)}
       _ ->
         {:error, :missing_token}

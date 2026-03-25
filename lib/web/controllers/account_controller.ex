@@ -28,7 +28,9 @@ defmodule PrometheusEntry.Controllers.AccountController do
   end
 
   def register(connection, _invalid), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 
   @spec login(Plug.Conn.t(), %{identifier: String.t(), password: String.t()}) :: Plug.Conn.t()
   def login(connection, %{"identifier" => identifier, "password" => password}) when is_binary(identifier) and is_binary(password) do
@@ -51,7 +53,9 @@ defmodule PrometheusEntry.Controllers.AccountController do
   end
 
   def login(connection, _invalid), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 
   # ! === Private Helpers === ! #
   @spec format_changeset_errors(Ecto.Changeset.t()) ::

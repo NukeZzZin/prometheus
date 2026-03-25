@@ -24,8 +24,7 @@ defmodule PrometheusEntry.Controllers.PostController do
     end
   end
 
-  def list_posts(connection, _parameters), do:
-    list_posts(connection, %{"limit" => "10"})
+  def list_posts(connection, _parameters), do: list_posts(connection, %{"limit" => "10"})
 
   @spec list_user_posts(Plug.Conn.t(), %{String.t() => String.t()}) :: Plug.Conn.t()
   def list_user_posts(connection, %{"id" => identifier, "limit" => limit}) do
@@ -70,16 +69,18 @@ defmodule PrometheusEntry.Controllers.PostController do
   end
 
   def get_post(connection, _parameters), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 
   @spec create_post(Plug.Conn.t(), map()) :: Plug.Conn.t()
-  def create(connection, parameters)  when is_map(parameters) and map_size(parameters) > 0 do
+  def create_post(connection, parameters)  when is_map(parameters) and map_size(parameters) > 0 do
     payload = Map.put(parameters, "author_id", connection.assigns[:current_user]["sub"])
     case PostContext.create_post(payload) do
       {:ok, identifier} ->
         connection
         |> put_status(:created)
-        |> json(%{success: true, data: %{post_id: identifier}})
+        |> json(%{success: true, data: %{post_id: to_string(identifier)}})
       {:error, %Ecto.Changeset{} = changeset} ->
         connection
         |> put_status(:unprocessable_entity)
@@ -92,7 +93,9 @@ defmodule PrometheusEntry.Controllers.PostController do
   end
 
   def create_post(connection, _parameters), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 
   # ! === Private Helpers === ! #
   @spec format_changeset_errors(Ecto.Changeset.t()) ::
