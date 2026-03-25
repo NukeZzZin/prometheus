@@ -7,7 +7,6 @@ defmodule Prometheus.Schemas.PostSchema do
 
   @primary_key {:id, :integer, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
-  @derive {Jason.Encoder, only: [:id, :title, :content, :author_id]}
 
   @type t :: %__MODULE__{}
 
@@ -51,4 +50,21 @@ defmodule Prometheus.Schemas.PostSchema do
     end
   end
   defp put_snowflake_id(changeset), do: changeset
+end
+
+defimpl Jason.Encoder, for: Prometheus.Schemas.PostSchema do
+  @spec encode(Prometheus.Schemas.PostSchema.t(), Jason.Encode.opts()) :: iodata()
+  def encode(payload, options) do
+    Jason.Encode.map(
+      %{
+        id: to_string(payload.id),
+        title: payload.title,
+        content: payload.content,
+        author_id: to_string(payload.author_id),
+        inserted_at: payload.inserted_at,
+        updated_at: payload.updated_at
+      },
+      options
+    )
+  end
 end

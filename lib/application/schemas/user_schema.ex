@@ -3,11 +3,8 @@ defmodule Prometheus.Schemas.UserSchema do
 
   import Ecto.Changeset
 
-  # alias Prometheus.Schemas.PostSchema
-
   @primary_key {:id, :integer, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
-  @derive {Jason.Encoder, only: [:id, :username, :display_name, :email]}
 
   @type t :: %__MODULE__{}
 
@@ -19,8 +16,6 @@ defmodule Prometheus.Schemas.UserSchema do
     field :email, :string
     field :password, :string, virtual: true, redact: true
     field :password_hash, :string, redact: true
-
-    # has_many :posts, PostSchema, foreign_key: :author_id
 
     timestamps()
   end
@@ -131,5 +126,23 @@ defmodule Prometheus.Schemas.UserSchema do
       _ ->
         changeset
     end
+  end
+end
+
+defimpl Jason.Encoder, for: Prometheus.Schemas.UserSchema do
+  @spec encode(Prometheus.Schemas.UserSchema.t(), Jason.Encode.opts()) :: iodata()
+  def encode(payload, options) do
+    Jason.Encode.map(
+      %{
+        id: to_string(payload.id),
+        username: payload.username,
+        display_name: payload.display_name,
+        email: payload.email,
+        user_flags: to_string(payload.user_flags),
+        inserted_at: payload.inserted_at,
+        updated_at: payload.updated_at
+      },
+      options
+    )
   end
 end

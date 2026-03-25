@@ -18,7 +18,9 @@ defmodule PrometheusEntry.Controllers.SessionController do
   end
 
   def refresh(connection, _invalid), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 
   @spec logout(Plug.Conn.t(), %{refresh_token: String.t()}) :: Plug.Conn.t()
   def logout(connection, %{"refresh_token" => current_token}) do
@@ -35,5 +37,7 @@ defmodule PrometheusEntry.Controllers.SessionController do
   end
 
   def logout(connection, _invalid), do:
-    send_resp(connection, :bad_request, Jason.encode!(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]}))
+    connection
+    |> put_status(:bad_request)
+    |> json(%{success: false, errors: [%{code: "BAD_REQUEST", message: "Invalid payload"}]})
 end
