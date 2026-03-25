@@ -9,7 +9,7 @@ defmodule PrometheusEntry.Endpoint do
   ]
 
   @cors_options [
-    origins: ["http://localhost:5173", ~r/^https:\/\/.*\.ngrok\.io$/],
+    origins: ["http://localhost:5173", ~r/^https?:\/\/[a-z0-9-]+\.ngrok(-free)?\.app$/i],
     allow_methods: ["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
     allow_headers: ["authorization", "content-type", "accept"],
     allow_credentials: true,
