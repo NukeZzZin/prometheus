@@ -4,7 +4,7 @@ defmodule Prometheus.Mix do
   def project do
     [
       app: :prometheus,
-      version: "0.1.0-dev",
+      version: "0.1.1-dev",
       elixir: ">= 1.19.0",
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
@@ -56,10 +56,6 @@ defmodule Prometheus.Mix do
       {:postgrex, ">= 0.22.0"},
       {:nimble_pool, ">= 1.1.0"},
       {:redix, "~> 1.5.3"},
-
-      # ! === Dependencies for telemetry and monitoring === ! #
-      # {:telemetry_metrics, "~> 1.1.0"},
-      # {:telemetry_poller, "~> 1.3.0"},
 
       # ! === Dependencies for environment variables === ! #
       {:dotenvy, "~> 1.1.1"},

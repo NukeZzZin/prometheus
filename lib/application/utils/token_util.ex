@@ -10,82 +10,52 @@ defmodule Prometheus.Utils.TokenUtil do
 
   @impl Joken.Config
   def token_config do
-    current_time = Joken.current_time()
-    default_claims()
+    default_claims(skip: [:aud, :iss])
     |> add_claim("iss", fn -> @issuer end, &(&1 == @issuer))
     |> add_claim("aud", fn -> @audience end, &(&1 == @audience))
     |> add_claim("sub", nil, &is_binary/1)
     |> add_claim("typ", nil, &(&1 in ["access", "refresh"]))
     |> add_claim("jti", nil, &is_binary/1)
-    |> add_claim("exp", nil, &(is_integer(&1) and &1 > current_time - @clock_skew))
-    |> add_claim("nbf", nil, &(is_integer(&1) and &1 <= current_time + @clock_skew))
+    |> add_claim("exp", nil, fn exp -> is_integer(exp) and exp > Joken.current_time() - @clock_skew end)
+    |> add_claim("nbf", nil, fn nbf -> is_integer(nbf) and nbf <= Joken.current_time() + @clock_skew end)
   end
 
-  def generate_access_token(subject) when is_integer(subject) do
-    current_time = Joken.current_time()
-    case generate_and_sign(%{
-      "sub" => Integer.to_string(subject),
-      "typ" => "access",
-      "jti" => Joken.generate_jti(),
-      "exp" => current_time + @access_expiration,
-      "nbf" => current_time
-    }) do
-      {:ok, bearer_token, claims} ->
-        {:ok, bearer_token, claims}
-      _ ->
-        {:error, :internal_server_error}
-    end
-  end
-
-  @spec generate_refresh_token(pos_integer()) ::
-    {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
-  def generate_refresh_token(subject) when is_integer(subject) do
-    current_time = Joken.current_time()
-    case generate_and_sign(%{
-      "sub" => Integer.to_string(subject),
-      "typ" => "refresh",
-      "jti" => Joken.generate_jti(),
-      "exp" => current_time + @refresh_expiration,
-      "nbf" => current_time
-    }) do
-      {:ok, bearer_token, claims} ->
-        {:ok, bearer_token, claims}
-      _ ->
-        {:error, :internal_server_error}
-    end
-  end
-
-  @spec generate_tuple_token(pos_integer()) ::
-    {:ok, Joken.bearer_token(), Joken.claims(), Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
-  def generate_tuple_token(identifier) when is_integer(identifier) do
-    with {:ok, access_token, access_claims} <- generate_access_token(identifier),
-      {:ok, refresh_token, refresh_claims} <- generate_refresh_token(identifier) do
-        {:ok, access_token, access_claims, refresh_token, refresh_claims}
+  @spec generate_tuple_token(String.t()) :: {:ok, %{access: {Joken.bearer_token(), Joken.claims()}, refresh: {Joken.bearer_token(), Joken.claims()}}} | {:error, :internal_server_error}
+  def generate_tuple_token(user_id) do
+    with {:ok, access_token, access_claims} <- generate_access_token(user_id), {:ok, refresh_token, refresh_claims} <- generate_refresh_token(user_id) do
+      {:ok, %{access: {access_token, access_claims}, refresh: {refresh_token, refresh_claims}}}
     else
-      _ ->
-        {:error, :internal_server_error}
+      _ -> {:error, :internal_server_error}
     end
   end
 
-  @spec verify_access_token(Joken.bearer_token()) ::
-    {:ok, Joken.claims()} | {:error, :invalid_token}
-  def verify_access_token(payload) when is_binary(payload) and byte_size(payload) > 0 do
-    with {:ok, %{"typ" => "access", "sub" => subject} = claims} <- verify_and_validate(payload),
-      {identifier, _} <- Integer.parse(subject) do
-        {:ok, Map.put(claims, "sub", identifier)}
-    else
+  @spec generate_access_token(String.t()) :: {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
+  def generate_access_token(subject), do: generate_generic_token(subject, "access", @access_expiration)
+
+  @spec generate_refresh_token(String.t()) :: {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
+  def generate_refresh_token(subject), do: generate_generic_token(subject, "refresh", @refresh_expiration)
+
+  @spec verify_access_token(Joken.bearer_token()) :: {:ok, Joken.claims()} | {:error, :invalid_token}
+  def verify_access_token(payload), do: verify_generic_token(payload, "access")
+
+  @spec verify_refresh_token(Joken.bearer_token()) :: {:ok, Joken.claims()} | {:error, :invalid_token}
+  def verify_refresh_token(payload), do: verify_generic_token(payload, "refresh")
+
+  # ! === Private Helpers === ! #
+  @spec verify_generic_token(Joken.bearer_token(), String.t()) :: {:ok, Joken.claims()} | {:error, :invalid_token}
+  defp verify_generic_token(payload, expected_type) do
+    case verify_and_validate(payload) do
+      {:ok, %{"typ" => ^expected_type} = claims} -> {:ok, claims}
       _ -> {:error, :invalid_token}
     end
   end
 
-  @spec verify_refresh_token(Joken.bearer_token()) ::
-    {:ok, Joken.claims()} | {:error, :invalid_token}
-  def verify_refresh_token(payload) when is_binary(payload) and byte_size(payload) > 0 do
-    with {:ok, %{"typ" => "refresh", "sub" => subject} = claims} <- verify_and_validate(payload),
-      {identifier, _} <- Integer.parse(subject) do
-        {:ok, Map.put(claims, "sub", identifier)}
-    else
-      _ -> {:error, :invalid_token}
+  @spec generate_generic_token(String.t(), String.t(), pos_integer()) :: {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
+  defp generate_generic_token(subject, claims_type, expiration) do
+    current_time = Joken.current_time()
+    case generate_and_sign(%{"sub" => subject, "typ" => claims_type, "jti" => Joken.generate_jti(), "exp" => current_time + expiration, "nbf" => current_time}) do
+      {:ok, bearer_token, claims} -> {:ok, bearer_token, claims}
+      {:error, _} -> {:error, :internal_server_error}
     end
   end
 end

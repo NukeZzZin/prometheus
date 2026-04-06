@@ -1,81 +1,40 @@
 defmodule Prometheus.Contexts.AccountContext do
   import Ecto.Query
-
   alias Prometheus.Contexts.SessionContext
   alias Prometheus.Repository
   alias Prometheus.Schemas.UserSchema
-  alias Prometheus.Utils.TokenUtil
 
-  @spec register_user(map()) ::
-    {:ok, %{atom() => Joken.bearer_token()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
-  def register_user(attributes) when is_map(attributes) and map_size(attributes) > 0 do
-    with {:ok, %UserSchema{} = user} <- Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)),
-      {:ok, tokens_callback} <- SessionContext.create_session(user.id) do
-        {:ok, tokens_callback}
-    else
-      {:error, %Ecto.Changeset{} = changeset} ->
-        {:error, changeset}
-      _ ->
-        {:error, :internal_server_error}
+  @spec register_user(map()) :: {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
+  def register_user(%{"username" => _, "display_name" => _, "email" => _, "password" => _} = attributes) do
+    case Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)) do
+      {:ok, %UserSchema{} = user} -> SessionContext.create_session(user.id)
+      {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
     end
   end
 
-  @spec login_user(pos_integer() | String.t(), String.t()) ::
-    {:ok, %{atom() => Joken.bearer_token()}} | {:error, :invalid_credentials}
-  def login_user(identifier, password) when is_binary(password) do
-    with {:ok, %UserSchema{} = user} <- get_user_by_identifier(identifier),
-      true <- Argon2.verify_pass(password, user.password_hash),
-      {:ok, tokens_callback} <- SessionContext.create_session(user.id) do
-        {:ok, tokens_callback}
-      else
-        false ->
-          Argon2.no_user_verify()
-          {:error, :invalid_credentials}
-        _ ->
-          {:error, :invalid_credentials}
-      end
-  end
-
-  @spec change_password(Joken.bearer_token(), String.t(), String.t()) ::
-    {:ok, :password_changed} | {:error, :cannot_change_password}
-  def change_password(access_token, current_password, new_password) when is_binary(current_password) and is_binary(new_password) do
-    with {:ok, access_claims} <- TokenUtil.verify_access_token(access_token),
-      {:ok, %UserSchema{} = user} <- get_user_by_identifier(access_claims["sub"]),
-      true <- Argon2.verify_pass(current_password, user.password_hash),
-      {:ok, _} <- Repository.update(UserSchema.change_password_changeset(user, %{password: new_password})) do
-        {:ok, :password_changed}
-    else
-      false ->
+  @spec login_user(map()) :: {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, :invalid_credentials}
+  def login_user(%{"identifier" => user_id, "password" => password}) do
+    case get_user_by_identifier(user_id) do
+      {:ok, %UserSchema{} = user} ->
+        if Argon2.verify_pass(password, user.password_hash),
+          do: SessionContext.create_session(user.id),
+          else: {:error, :invalid_credentials}
+      _ ->
         Argon2.no_user_verify()
-        {:error, :cannot_change_password}
-      _ ->
-        {:error, :cannot_change_password}
+        {:error, :invalid_credentials}
     end
   end
 
-  # ! === Public Helpers === ! #
-  @spec get_user_by_identifier(pos_integer()) ::
-    {:ok, UserSchema.t()} | {:error, :not_found}
-  def get_user_by_identifier(identifier) when is_integer(identifier) and identifier > 0,
-    do: fetch_user_by_query(from subject in UserSchema, where: subject.id == ^identifier)
-
-  @spec get_user_by_identifier(String.t()) ::
-    {:ok, UserSchema.t()} | {:error, :not_found}
-  def get_user_by_identifier(identifier) when is_binary(identifier) and byte_size(identifier) > 0 do
-    if String.match?(identifier, ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/),
-      do: fetch_user_by_query(from subject in UserSchema, where: subject.email == ^identifier),
-      else: fetch_user_by_query(from subject in UserSchema, where: subject.username == ^identifier)
+  @spec get_user_by_identifier(String.t()) :: {:ok, UserSchema.t()} | {:error, :not_found}
+  def get_user_by_identifier(identifier) do
+    normalized_identifier = String.trim(String.normalize(String.downcase(identifier, :default), :nfc))
+    repository_query = cond do
+      String.contains?(identifier, "@") -> from(subject in UserSchema, where: subject.email == ^normalized_identifier)
+      true -> from(subject in UserSchema, where: subject.username == ^normalized_identifier)
+    end
+    case Repository.one(repository_query) do
+      %UserSchema{} = record -> {:ok, record}
+      _ -> {:error, :not_found}
+    end
   end
-
-   # ! === Private Helpers === ! #
-   @spec fetch_user_by_query(Ecto.Query.t()) ::
-    {:ok, UserSchema.t()} | {:error, :not_found}
-   defp fetch_user_by_query(%Ecto.Query{} = query) do
-     case Repository.one(query) do
-       %UserSchema{} = record ->
-         {:ok, record}
-       _ ->
-         {:error, :not_found}
-     end
-   end
 end

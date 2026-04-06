@@ -14,31 +14,29 @@ defmodule PrometheusEntry.Router do
     pipe_through [:api]
 
     scope "/posts" do
-      get "/", PostController, :list_posts # ! === REQUEST
-      get "/:id", PostController, :get_post # ! === REQUEST: { PARAMS: { id: integer } } #
+      get "/", PostController, :list_posts
+      get "/:id", PostController, :get_post
     end
 
     scope "/users" do
-      # TODO: Lembra de implementar as rotas para usuarios.
-      get "/:id/posts", PostController, :list_user_posts # ! === REQUEST: { QUERY_PARAMS: { id: integer } } #
+      get "/:id/posts", PostController, :list_user_posts
     end
 
     scope "/auth" do
-      post "/register", AccountController, :register # ! === REQUEST: { FORM-DATA: { username: string, email: string, display_name: string, password: string } } #
-      post "/login", AccountController, :login # ! === REQUEST: { FORM-DATA: { username: string, password: string } } #
+      post "/register", AccountController, :register
+      post "/login", AccountController, :login
     end
 
     scope "/session" do
-      post "/refresh", SessionController, :refresh # ! === REQUEST: { FORM-DATA: { refresh_token: string } } #
-      post "/logout", SessionController, :logout # ! === REQUEST: { FORM-DATA: { refresh_token: string } } #
+      post "/refresh", SessionController, :refresh
+      post "/logout", SessionController, :logout
     end
   end
 
   scope "/api/v1", PrometheusEntry.Controllers do
-    pipe_through [:authenticated] # ! === REQUEST: { HEADER: "Authorization: Bearer" } #
-
+    pipe_through [:authenticated]
     scope "/posts" do
-      post "/create", PostController, :create_post # ! === REQUEST: { FORM-DATA: { title: string, content: string } } #
+      post "/create", PostController, :create_post
     end
   end
 end

@@ -3,7 +3,7 @@ defmodule Prometheus.Repository.Migrations.CreateUsersTable do
 
   def change do
     create table(:users, primary_key: false) do
-      add :id, :bigint, primary_key: true
+      add :id, :string, primary_key: true
 
       add :username, :string, null: false
       add :display_name, :string, null: false

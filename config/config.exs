@@ -7,7 +7,7 @@ config :prometheus,
 config :prometheus, PrometheusEntry.Endpoint,
   url: [host: "localhost"],
   adapter: Bandit.PhoenixAdapter,
-  pubsub_server: Prometheus.PubSub
+  pubsub_server: Prometheus.PubSubServer
 
 config :logger, :console,
   format: "$time [$level] ($metadata) node=$node - $message\n",

@@ -12,10 +12,10 @@ Dotenvy.source!(
 )
 
 secret_key_base = Dotenvy.env!("SECRET_KEY_BASE", :string, if(config_env() in [:dev, :test],
-  do: Mix.Tasks.Phx.Gen.Secret.run([]),
+  do: :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64),
   else: raise"Set SECRET_KEY_BASE in your environment file."))
 jwt_secret_key = Dotenvy.env!("JWT_SECRET_KEY", :string, if(config_env() in [:dev, :test],
-  do: Mix.Tasks.Phx.Gen.Secret.run([]),
+  do: :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64),
   else: raise"Set JWT_SECRET_KEY in your environment file."))
 
 config :joken, default_signer: jwt_secret_key
@@ -24,17 +24,17 @@ config :argon2_elixir,
   argon2_type: 2,
   t_cost: 2,
   m_cost: 16,
-  parallelism: Dotenvy.env!("ARGON_THREADS", :integer, div(System.schedulers_online(), 2))
+  parallelism: Dotenvy.env!("ARGON_THREADS", :integer, div(:erlang.system_info(:schedulers_online), 2))
 
 config :snowflake,
   epoch: 1_767_268_800, # ! 2026-01-01 12:00:00 (default)
-  machine_id: Dotenvy.env!("MACHINE_ID", :integer, :erlang.phash2(Node.self(), 1024))
+  machine_id: Dotenvy.env!("MACHINE_ID", :integer, :erlang.phash2(:erlang.node(), 1024))
 
 if Dotenvy.env!("PHX_SERVER", :boolean, false) do
   config :prometheus, PrometheusEntry.Endpoint, server: true
 end
 
-postgres_pool_size = Dotenvy.env!("POSTGRES_POOL_SIZE", :integer, System.schedulers_online() * 2)
+postgres_pool_size = Dotenvy.env!("POSTGRES_POOL_SIZE", :integer, :erlang.system_info(:schedulers_online) * 2)
 
 case Dotenvy.env!("DATABASE_URL", :string?, nil) do
   nil ->
@@ -52,7 +52,7 @@ case Dotenvy.env!("DATABASE_URL", :string?, nil) do
       pool_size: postgres_pool_size
 end
 
-redis_pool_size = Dotenvy.env!("REDIS_POOL_SIZE", :integer, System.schedulers_online() * 2)
+redis_pool_size = Dotenvy.env!("REDIS_POOL_SIZE", :integer, :erlang.system_info(:schedulers_online) * 2)
 
 config :prometheus, Prometheus.Redis,
   host: Dotenvy.env!("REDIS_HOST", :string, "localhost"),
@@ -82,9 +82,7 @@ case config_env() do
 
   :test ->
     config :prometheus, Prometheus.Repository,
-      database:
-        Dotenvy.env!("POSTGRES_DB", :string, "prometheus_test") <>
-          Dotenvy.env!("MIX_TEST_PARTITION", :string, "1")
+      database: Dotenvy.env!("POSTGRES_DB", :string, "prometheus_test") <> Dotenvy.env!("MIX_TEST_PARTITION", :string, "1")
 
     config :prometheus, PrometheusEntry.Endpoint,
       http: [ip: {127, 0, 0, 1}, port: phoenix_server_port],
