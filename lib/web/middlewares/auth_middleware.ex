@@ -11,15 +11,10 @@ defmodule PrometheusEntry.Middlewares.AuthMiddleware do
     with {:ok, access_token} <- extract_connection_token(connection), {:ok, access_claims} <- TokenUtil.verify_access_token(access_token) do
       assign(connection, :current_user, access_claims)
     else
-      {:error, :missing_token} ->
+      _ ->
         connection
         |> put_resp_content_type("application/json")
-        |> send_resp(:unauthorized, Jason.encode!(%{success: false, errors: [%{code: "MISSING_TOKEN", message: "Missing token"}]}))
-        |> halt()
-      {:error, :invalid_token} ->
-        connection
-        |> put_resp_content_type("application/json")
-        |> send_resp(:unauthorized, Jason.encode!(%{success: false, errors: [%{code: "INVALID_TOKEN", message: "Invalid token"}]}))
+        |> send_resp(:unauthorized, Jason.encode!(%{success: false, errors: [%{code: "UNAUTHORIZED", message: "Unauthorized"}]}))
         |> halt()
     end
   end

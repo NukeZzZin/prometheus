@@ -6,15 +6,15 @@ defmodule Prometheus.Contexts.PostContext do
   @spec create_post(map()) :: {:ok, %{post_id: String.t()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
   def create_post(%{"title" => _, "content" => _, "author_id" => _} = attributes) do
     case Repository.insert(PostSchema.create_post_changeset(%PostSchema{}, attributes)) do
-      {:ok, %PostSchema{id: identifier}} -> {:ok, %{post_id: identifier}}
+      {:ok, %PostSchema{id: post_id}} -> {:ok, %{post_id: post_id}}
       {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
       _ -> {:error, :internal_server_error}
     end
   end
 
   @spec get_post_by_identifier(String.t()) :: {:ok, PostSchema.t()} | {:error, :not_found}
-  def get_post_by_identifier(identifier) do
-    repository_query = from subject in PostSchema, where: subject.id == ^identifier
+  def get_post_by_identifier(post_id) do
+    repository_query = from subject in PostSchema, where: subject.id == ^post_id
     case Repository.one(repository_query) do
       %PostSchema{} = record -> {:ok, record}
       _ -> {:error, :not_found}

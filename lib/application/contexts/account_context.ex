@@ -26,11 +26,11 @@ defmodule Prometheus.Contexts.AccountContext do
   end
 
   @spec get_user_by_identifier(String.t()) :: {:ok, UserSchema.t()} | {:error, :not_found}
-  def get_user_by_identifier(identifier) do
-    normalized_identifier = String.trim(String.normalize(String.downcase(identifier, :default), :nfc))
+  def get_user_by_identifier(user_id) do
+    normalized_user_id = String.trim(String.normalize(String.downcase(user_id, :default), :nfc))
     repository_query = cond do
-      String.contains?(identifier, "@") -> from(subject in UserSchema, where: subject.email == ^normalized_identifier)
-      true -> from(subject in UserSchema, where: subject.username == ^normalized_identifier)
+      String.contains?(normalized_user_id, "@") -> from(subject in UserSchema, where: subject.email == ^normalized_user_id)
+      true -> from(subject in UserSchema, where: subject.username == ^normalized_user_id)
     end
     case Repository.one(repository_query) do
       %UserSchema{} = record -> {:ok, record}
