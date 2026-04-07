@@ -1,4 +1,5 @@
 defmodule Prometheus.Contexts.SessionContext do
+  @moduledoc false
   alias Prometheus.Redis
   alias Prometheus.Utils.TokenUtil
 
@@ -34,7 +35,7 @@ defmodule Prometheus.Contexts.SessionContext do
     end
   end
 
-  # ! === Private Helpers === ! #
+  # * === Private Helpers === * #
   @spec store_refresh_session(String.t(), String.t()) :: {:ok, :stored_session} | {:error, :internal_server_error}
   defp store_refresh_session(identifier, subject) do
     case Redis.command(["SET", "refresh_session:#{identifier}", subject, "NX", "EX", @refresh_expiration]) do

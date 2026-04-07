@@ -1,11 +1,13 @@
 defmodule PrometheusEntry.Controllers.PostController do
+  @moduledoc false
   use PrometheusEntry, :controller
   alias Prometheus.Contexts.PostContext
+  alias Prometheus.Utils.GenericUtil
   action_fallback PrometheusEntry.Controllers.FallbackController
 
   @spec list_posts(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def list_posts(connection, %{"limit" => limit}) do
-    parsed_limit = parse_integer(limit)
+    parsed_limit = GenericUtil.parse_integer(limit)
     with {:ok, posts} <- PostContext.list_recent_posts(parsed_limit) do
       connection
       |> put_status(:ok)
@@ -16,7 +18,7 @@ defmodule PrometheusEntry.Controllers.PostController do
 
   @spec list_user_posts(Plug.Conn.t(), map()) :: Plug.Conn.t()
   def list_user_posts(connection, %{"id" => user_id, "limit" => limit}) do
-    parsed_limit = parse_integer(limit)
+    parsed_limit = GenericUtil.parse_integer(limit)
     with {:ok, posts} <- PostContext.list_posts_by_author(user_id, parsed_limit) do
       connection
       |> put_status(:ok)
@@ -51,13 +53,4 @@ defmodule PrometheusEntry.Controllers.PostController do
     end
   end
   def create_post(_connection, _parameters), do: {:error, :bad_request}
-
-  # ! === Private Helpers === ! #
-  @spec parse_integer(String.t(), integer() | nil) :: integer()
-  defp parse_integer(target, default \\ nil) when is_binary(target) and byte_size(target) > 0 do
-    case Integer.parse(target) do
-      {parsed_integer, ""} -> parsed_integer
-      _ -> default
-    end
-  end
 end

@@ -1,7 +1,8 @@
 defmodule Prometheus.Schemas.UserSchema do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Prometheus.Utils.SnowflakeUtil
+  alias Prometheus.Utils.ChangesetUtil
 
   @email_regex ~r/^[^\s@]+@[^\s@]+\.[^\s@]+$/
   @display_name_regex ~r/^[\p{L}\p{N}\s._-]+$/u
@@ -33,7 +34,7 @@ defmodule Prometheus.Schemas.UserSchema do
     |> validate_display_name_field()
     |> validate_email_field()
     |> validate_password_field()
-    |> SnowflakeUtil.put_changeset_snowflake_id()
+    |> ChangesetUtil.put_changeset_snowflake_id()
     |> put_password_hash()
   end
 
@@ -56,11 +57,11 @@ defmodule Prometheus.Schemas.UserSchema do
     |> put_password_hash()
   end
 
-  # ! === Private Helpers === ! #
+  # * === Private Helpers === * #
   @spec validate_email_field(%__MODULE__{} | Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_email_field(%Ecto.Changeset{} = changeset) do
     changeset
-    |> put_normalized_field(:email)
+    |> ChangesetUtil.put_normalized_field(:email)
     |> validate_length(:email, min: 6, max: 320, message: "email must be between 6 and 320 characters")
     |> validate_format(:email, @email_regex, message: "invalid email format")
     |> unique_constraint(:email)
@@ -76,7 +77,7 @@ defmodule Prometheus.Schemas.UserSchema do
   @spec validate_username_field(%__MODULE__{} | Ecto.Changeset.t()) :: Ecto.Changeset.t()
   defp validate_username_field(%Ecto.Changeset{} = changeset) do
     changeset
-    |> put_normalized_field(:username)
+    |> ChangesetUtil.put_normalized_field(:username)
     |> validate_length(:username, min: 4, max: 32, message: "username must be between 4 and 32 characters")
     |> validate_format(:username, @username_regex, message: "invalid username format")
     |> unique_constraint(:username)
@@ -97,12 +98,4 @@ defmodule Prometheus.Schemas.UserSchema do
     end
   end
   defp put_password_hash(changeset), do: changeset
-
-  @spec put_normalized_field(Ecto.Changeset.t(), atom()) :: Ecto.Changeset.t()
-  defp put_normalized_field(%Ecto.Changeset{} = changeset, field) when is_atom(field) do
-    case get_field(changeset, field) do
-      nil -> changeset
-      value -> put_change(changeset, field, String.trim(String.normalize(String.downcase(value, :default), :nfc)))
-    end
-  end
 end

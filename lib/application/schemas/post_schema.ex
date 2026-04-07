@@ -1,7 +1,8 @@
 defmodule Prometheus.Schemas.PostSchema do
+  @moduledoc false
   use Ecto.Schema
   import Ecto.Changeset
-  alias Prometheus.Utils.SnowflakeUtil
+  alias Prometheus.Utils.ChangesetUtil
 
   @primary_key {:id, :string, autogenerate: false}
   @timestamps_opts [type: :utc_datetime_usec]
@@ -21,7 +22,7 @@ defmodule Prometheus.Schemas.PostSchema do
     changeset
     |> cast(attributes, [:title, :content, :author_id])
     |> validate_required([:title, :content, :author_id])
-    |> SnowflakeUtil.put_changeset_snowflake_id()
+    |> ChangesetUtil.put_changeset_snowflake_id()
   end
 
   @spec update_post_changeset(%__MODULE__{} | Ecto.Changeset.t(), map()) :: Ecto.Changeset.t()

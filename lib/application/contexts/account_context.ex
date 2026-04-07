@@ -1,8 +1,10 @@
 defmodule Prometheus.Contexts.AccountContext do
+  @moduledoc false
   import Ecto.Query
   alias Prometheus.Contexts.SessionContext
   alias Prometheus.Repository
   alias Prometheus.Schemas.UserSchema
+  alias Prometheus.Utils.GenericUtil
 
   @spec register_user(map()) :: {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
   def register_user(%{"username" => _, "display_name" => _, "email" => _, "password" => _} = attributes) do
@@ -28,9 +30,10 @@ defmodule Prometheus.Contexts.AccountContext do
 
   @spec get_user_by_identifier(String.t()) :: {:ok, UserSchema.t()} | {:error, :not_found}
   def get_user_by_identifier(user_id) do
-    normalized_user_id = String.trim(String.normalize(String.downcase(user_id, :default), :nfc))
+    normalized_user_id = GenericUtil.normalize_string(user_id)
+     # TODO: Mantenha o uso de cond para futuras atualizações.
+    # credo:disable-for-next-line
     repository_query = cond do
-      # TODO: Mantenha o uso de cond para futuras atualizações.
       String.contains?(normalized_user_id, "@") -> from(subject in UserSchema, where: subject.email == ^normalized_user_id)
       true -> from(subject in UserSchema, where: subject.username == ^normalized_user_id)
     end

@@ -1,4 +1,5 @@
 defmodule Prometheus.Utils.TokenUtil do
+  @moduledoc false
   use Joken.Config
 
   @issuer "Prometheus-Backend"
@@ -16,14 +17,19 @@ defmodule Prometheus.Utils.TokenUtil do
     |> add_claim("sub", nil, &is_binary/1)
     |> add_claim("typ", nil, &(&1 in ["access", "refresh"]))
     |> add_claim("jti", nil, &is_binary/1)
-    |> add_claim("exp", nil, fn exp -> is_integer(exp) and exp > Joken.current_time() - @clock_skew end)
-    |> add_claim("nbf", nil, fn nbf -> is_integer(nbf) and nbf <= Joken.current_time() + @clock_skew end)
+    |> add_claim("exp", nil, fn exp ->
+      is_integer(exp) and exp > Joken.current_time() - @clock_skew
+    end)
+    |> add_claim("nbf", nil, fn nbf ->
+      is_integer(nbf) and nbf <= Joken.current_time() + @clock_skew
+    end)
   end
 
   @spec generate_tuple_token(String.t()) :: {:ok, %{access: {Joken.bearer_token(), Joken.claims()}, refresh: {Joken.bearer_token(), Joken.claims()}}} | {:error, :internal_server_error}
   def generate_tuple_token(user_id) do
-    with {:ok, access_token, access_claims} <- generate_access_token(user_id), {:ok, refresh_token, refresh_claims} <- generate_refresh_token(user_id) do
-      {:ok, %{access: {access_token, access_claims}, refresh: {refresh_token, refresh_claims}}}
+    with {:ok, access_token, access_claims} <- generate_access_token(user_id),
+      {:ok, refresh_token, refresh_claims} <- generate_refresh_token(user_id) do
+        {:ok, %{access: {access_token, access_claims}, refresh: {refresh_token, refresh_claims}}}
     else
       _ -> {:error, :internal_server_error}
     end
@@ -41,7 +47,7 @@ defmodule Prometheus.Utils.TokenUtil do
   @spec verify_refresh_token(Joken.bearer_token()) :: {:ok, Joken.claims()} | {:error, :invalid_token}
   def verify_refresh_token(payload), do: verify_generic_token(payload, "refresh")
 
-  # ! === Private Helpers === ! #
+  # * === Private Helpers === * #
   @spec verify_generic_token(Joken.bearer_token(), String.t()) :: {:ok, Joken.claims()} | {:error, :invalid_token}
   defp verify_generic_token(payload, expected_type) do
     case verify_and_validate(payload) do
@@ -53,7 +59,8 @@ defmodule Prometheus.Utils.TokenUtil do
   @spec generate_generic_token(String.t(), String.t(), pos_integer()) :: {:ok, Joken.bearer_token(), Joken.claims()} | {:error, :internal_server_error}
   defp generate_generic_token(subject, claims_type, expiration) do
     current_time = Joken.current_time()
-    case generate_and_sign(%{"sub" => subject, "typ" => claims_type, "jti" => Joken.generate_jti(), "exp" => current_time + expiration, "nbf" => current_time}) do
+    generic_claims = %{"sub" => subject, "typ" => claims_type, "jti" => Joken.generate_jti(), "exp" => current_time + expiration, "nbf" => current_time}
+    case generate_and_sign(generic_claims) do
       {:ok, bearer_token, claims} -> {:ok, bearer_token, claims}
       {:error, _} -> {:error, :internal_server_error}
     end

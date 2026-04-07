@@ -1,4 +1,5 @@
 defmodule Prometheus.Application do
+  @moduledoc false
   use Application
 
   @impl Application

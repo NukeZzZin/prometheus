@@ -1,4 +1,5 @@
 defmodule Prometheus.Contexts.PostContext do
+  @moduledoc false
   import Ecto.Query
   alias Prometheus.Repository
   alias Prometheus.Schemas.PostSchema

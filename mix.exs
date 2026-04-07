@@ -9,8 +9,9 @@ defmodule Prometheus.Mix do
       elixirc_paths: elixirc_paths(Mix.env()),
       build_embedded: Mix.env() == :prod,
       start_permanent: Mix.env() == :prod,
+      cli: cli(),
       aliases: aliases(),
-      deps: deps()
+      deps: deps(),
     ]
   end
 
@@ -26,7 +27,7 @@ defmodule Prometheus.Mix do
       preferred_envs:
       [
         "project.test": :test,
-        "project.precommit": :test,
+        "project.precommit": :test
       ]
     ]
   end
@@ -36,31 +37,31 @@ defmodule Prometheus.Mix do
 
   defp deps do
     [
-      # ! === Dependencies for main application === ! #
+      # * === Dependencies for main application === * #
       {:phoenix, "~> 1.8.5"},
       {:phoenix_ecto, "~> 4.7.0"},
       {:phoenix_pubsub, "~> 2.2.0"},
       {:bandit, "~> 1.10.3"},
       {:corsica, "~> 2.1.3"},
 
-      # ! === Dependencies for serialization and deserialization === ! #
+      # * === Dependencies for serialization and deserialization === * #
       {:jason, "~> 1.4.4"},
 
-      # ! === Dependencies for hashing and security === ! #
+      # * === Dependencies for hashing and security === * #
       {:argon2_elixir, "~> 4.1.3"},
       {:snowflake, "~> 1.0.4"},
       {:joken, "~> 2.6.2"},
 
-      # ! === Dependencies for database and cache === ! #
+      # * === Dependencies for database and cache === * #
       {:ecto_sql, "~> 3.13.5"},
       {:postgrex, ">= 0.22.0"},
       {:nimble_pool, ">= 1.1.0"},
       {:redix, "~> 1.5.3"},
 
-      # ! === Dependencies for environment variables === ! #
+      # * === Dependencies for environment variables === * #
       {:dotenvy, "~> 1.1.1"},
 
-      # ! === Dependencies for development and testing === ! #
+      # * === Dependencies for development and testing === * #
       {:dialyxir, "~> 1.4.7", only: [:dev, :test], runtime: false},
       {:credo, "~> 1.7.17", only: [:dev, :test], runtime: false}
     ]
@@ -74,9 +75,9 @@ defmodule Prometheus.Mix do
       "project.test": ["ecto.prepare", "test"],
 
       "project.precommit": ["compile --warnings-as-errors", "deps.unlock --unused", "project.check", "project.test"],
-      "project.check": ["format --check-formatted", "credo --strict"],
+      "project.check": ["format --check-formatted", "credo --strict", "dialyzer"],
 
-      "ecto.prepare": ["ecto.create --quiet", "ecto.migrate"],
+      "ecto.prepare": ["ecto.create --if-not-exists", "ecto.migrate"],
       "ecto.seed": ["run priv/repo/seeds.exs"],
       "ecto.rebuild": ["ecto.drop", "ecto.prepare"],
 

@@ -1,4 +1,5 @@
 defmodule PrometheusEntry.Controllers.SessionController do
+  @moduledoc false
   use PrometheusEntry, :controller
   alias Prometheus.Contexts.SessionContext
   action_fallback PrometheusEntry.Controllers.FallbackController

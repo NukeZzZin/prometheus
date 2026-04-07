@@ -1,6 +1,8 @@
 defmodule PrometheusEntry.Controllers.FallbackController do
+  @moduledoc false
   use PrometheusEntry, :controller
 
+  @spec call(Plug.Conn.t(), {:error, atom() | Ecto.Changeset.t() | term()}) :: Plug.Conn.t()
   def call(connection, {:error, :bad_request}), do: build_response(connection, :bad_request, "Invalid request")
   def call(connection, {:error, :unauthorized}), do: build_response(connection, :unauthorized, "Unauthorized")
   def call(connection, {:error, :forbidden}), do: build_response(connection, :forbidden, "Forbidden")
@@ -9,15 +11,19 @@ defmodule PrometheusEntry.Controllers.FallbackController do
   def call(connection, {:error, %Ecto.Changeset{} = changeset}), do: build_response(connection, :unprocessable_content, format_changeset_errors(changeset))
   def call(connection, {:error, _reason}), do: build_response(connection, :internal_server_error, "Unexpected error")
 
-  # ! === Private Helpers === ! #
+  # * === Private Helpers === * #
   @spec format_changeset_errors(Ecto.Changeset.t()) :: [%{field: atom(), code: String.t(), message: String.t()}]
   defp format_changeset_errors(%Ecto.Changeset{} = changeset) do
     changeset
     |> Ecto.Changeset.traverse_errors(fn {message, options} ->
-      Enum.reduce(options, message, fn {key, value}, interpolated_message -> String.replace(interpolated_message, "%{#{key}}", to_string(value)) end)
+      Enum.reduce(options, message, fn {key, value}, interpolated_message ->
+        String.replace(interpolated_message, "%{#{key}}", to_string(value))
+      end)
     end)
     |> Enum.flat_map(fn {field, messages} ->
-      Enum.map(messages, fn message -> %{field: field, code: "INVALID_FIELD", message: message} end)
+      Enum.map(messages, fn message ->
+        %{field: field, code: "INVALID_FIELD", message: message}
+      end)
     end)
   end
 

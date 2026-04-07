@@ -1,4 +1,5 @@
 defmodule PrometheusEntry.Router do
+  @moduledoc false
   use PrometheusEntry, :router
 
   pipeline :api do

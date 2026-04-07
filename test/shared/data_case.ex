@@ -5,7 +5,6 @@ defmodule Prometheus.Test.DataCase do
   using do
     quote do
       alias Prometheus.Repository
-
       import Ecto
       import Ecto.{Changeset, Query}
       import Prometheus.Test.DataCase

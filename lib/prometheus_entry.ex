@@ -1,4 +1,6 @@
 defmodule PrometheusEntry do
+  @moduledoc false
+
   @spec router() :: Macro.t()
   def router do
     quote do
