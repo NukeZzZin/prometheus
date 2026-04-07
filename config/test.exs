@@ -1,6 +1,7 @@
 import Config
 
 config :prometheus, PrometheusEntry.Endpoint, server: false
+config :prometheus, Prometheus.Repository, pool: Ecto.Adapters.SQL.Sandbox
 
 config :logger, :console,
   level: :warning,

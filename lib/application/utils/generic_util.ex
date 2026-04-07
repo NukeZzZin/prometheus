@@ -5,13 +5,15 @@ defmodule Prometheus.Utils.GenericUtil do
     value
     |> String.trim()
     |> String.downcase(:default)
-    |> String.normalize(:nfc)
+    |> :unicode.characters_to_nfd_binary()
+    |> String.replace(~r/\p{Mn}/u, "")
+    |> :unicode.characters_to_nfc_binary()
   end
 
   @spec parse_integer(String.t(), integer() | nil) :: integer() | nil
   def parse_integer(value, default \\ nil) when is_binary(value) and byte_size(value) > 0 do
-    case Integer.parse(value) do
-      {parsed_value, ""} -> parsed_value
+    case Integer.parse(String.trim(value)) do
+      {parsed_value, _} -> parsed_value
       _ -> default
     end
   end

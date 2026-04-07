@@ -11,7 +11,7 @@ defmodule Prometheus.Mix do
       start_permanent: Mix.env() == :prod,
       cli: cli(),
       aliases: aliases(),
-      deps: deps(),
+      deps: deps()
     ]
   end
 
@@ -27,6 +27,7 @@ defmodule Prometheus.Mix do
       preferred_envs:
       [
         "project.test": :test,
+        "project.check": :test,
         "project.precommit": :test
       ]
     ]
@@ -69,17 +70,15 @@ defmodule Prometheus.Mix do
 
   defp aliases do
     [
-      "project.start": ["project.prepare", "phx.server"],
-      "project.prepare": ["deps.get", "deps.compile", "ecto.prepare"],
-      "project.reset": ["deps.clean --all", "deps.get", "compile", "ecto.reset"],
-      "project.test": ["ecto.prepare", "test"],
+      "project.prepare": ["deps.get", "deps.compile", "ecto.setup"],
+      "project.reset": ["deps.clean --all", "deps.get", "compile --warnings-as-errors", "ecto.rebuild"],
 
-      "project.precommit": ["compile --warnings-as-errors", "deps.unlock --unused", "project.check", "project.test"],
-      "project.check": ["format --check-formatted", "credo --strict", "dialyzer"],
+      "project.test": ["ecto.create --quiet", "ecto.migrate --quiet", "test"],
+      "project.check": ["format --check-formatted", "credo --all --strict", "dialyzer"],
+      "project.precommit": ["compile --warnings-as-errors", "project.check", "project.test"],
 
-      "ecto.prepare": ["ecto.create --if-not-exists", "ecto.migrate"],
-      "ecto.seed": ["run priv/repo/seeds.exs"],
-      "ecto.rebuild": ["ecto.drop", "ecto.prepare"],
+      "ecto.setup": ["ecto.create --quiet", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.rebuild": ["ecto.drop", "ecto.setup"],
 
       "deps.reset": ["deps.clean --all", "deps.get", "deps.compile"],
       "deps.recompile": ["deps.clean --build", "deps.get", "deps.compile"]

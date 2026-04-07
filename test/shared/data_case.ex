@@ -4,10 +4,12 @@ defmodule Prometheus.Test.DataCase do
 
   using do
     quote do
+      @endpoint PrometheusEntry.Endpoint
+      use PrometheusEntry, :verified_routes
+      import Plug.Conn
+      import Phoenix.ConnTest
+      import PrometheusEntry.Test.ConnCase
       alias Prometheus.Repository
-      import Ecto
-      import Ecto.{Changeset, Query}
-      import Prometheus.Test.DataCase
     end
   end
 
