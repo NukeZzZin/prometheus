@@ -9,6 +9,7 @@ defmodule Prometheus.Contexts.AccountContext do
     case Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)) do
       {:ok, %UserSchema{} = user} -> SessionContext.create_session(user.id)
       {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
+      _ -> {:error, :internal_server_error}
     end
   end
 
@@ -29,6 +30,7 @@ defmodule Prometheus.Contexts.AccountContext do
   def get_user_by_identifier(user_id) do
     normalized_user_id = String.trim(String.normalize(String.downcase(user_id, :default), :nfc))
     repository_query = cond do
+      # TODO: Mantenha o uso de cond para futuras atualizações.
       String.contains?(normalized_user_id, "@") -> from(subject in UserSchema, where: subject.email == ^normalized_user_id)
       true -> from(subject in UserSchema, where: subject.username == ^normalized_user_id)
     end
