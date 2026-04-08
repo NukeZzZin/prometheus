@@ -1,22 +1,14 @@
 import Config
 
+secret_key_base = System.get_env("SECRET_KEY_BASE") || :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64)
+jwt_secret_key = System.get_env("JWT_SECRET_KEY") || :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64)
 env_dir_prefix = System.get_env("RELEASE_ROOT") || Path.expand(".")
 
-Dotenvy.source!(
-  [
-    Path.absname(".env", env_dir_prefix),
-    Path.absname(".env.#{config_env()}", env_dir_prefix),
-    System.get_env()
-  ],
-  require_files: [Path.absname(".env", env_dir_prefix)]
-)
-
-secret_key_base = Dotenvy.env!("SECRET_KEY_BASE", :string, if(config_env() in [:dev, :test],
-  do: :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64),
-  else: raise"Set SECRET_KEY_BASE in your environment file."))
-jwt_secret_key = Dotenvy.env!("JWT_SECRET_KEY", :string, if(config_env() in [:dev, :test],
-  do: :crypto.strong_rand_bytes(64) |> Base.encode64(padding: false) |> binary_part(0, 64),
-  else: raise"Set JWT_SECRET_KEY in your environment file."))
+Dotenvy.source!([
+  Path.join(env_dir_prefix, ".env"),
+  Path.join(env_dir_prefix, ".env.#{config_env()}"),
+  System.get_env()
+])
 
 config :joken, default_signer: jwt_secret_key
 
@@ -69,7 +61,7 @@ case config_env() do
 
     config :prometheus, PrometheusEntry.Endpoint,
       http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: phoenix_server_port],
-      url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
+      # url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
       secret_key_base: secret_key_base
 
   :test ->

@@ -5,30 +5,38 @@
 ## 🌎 **_Prerequisites_**
 
 - Instalar [**_Git_**](https://git-scm.com/).
-- Instalar [**_Elixir_**](https://elixir-lang.org/install.html).
-- Instalar [**_Erlang/OTP_**](https://www.erlang.org/downloads).
-- Instalar [**_Docker_**](https://www.docker.com/).
+- Instalar [**_Elixir_**](https://elixir-lang.org/install.html). (_Necessário somente para deploy **Localmente**._)
+- Instalar [**_Erlang/OTP_**](https://www.erlang.org/downloads). (_Necessário somente para deploy **Localmente**._)
+- Instalar [**_Docker_**](https://www.docker.com/). (_Necessário somente para deploy em container **Docker**._)
+- Instalar [**_PostgreSQL_**](https://www.postgresql.org/). (_Necessário somente para deploy **Localmente**._)
+- Instalar [**_Redis_**](https://redis.io/). (_Necessário somente para deploy **Localmente**._)
 
 ### 🚚 **_Installation_**
 
 1. Clone o repositório usando **_`git clone https://github.com/NukeZzZin/prometheus.git`_** no seu terminal.
 2. Entre na pasta do repositório usando **_`cd prometheus`_** no seu terminal.
-3. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
 
 #### 📦 **_Docker Compose deploy_**
 
 1. Construa o container **_Docker_** usando **_`docker-compose build`_** no seu terminal.
-2. Inicialize o container **_Docker_** usando **_`docker-compose up -d`_** no seu terminal.
+2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
+3. Inicialize o container **_Docker_** usando **_`docker-compose --profile application up`_** no seu terminal.
 
 #### 🐱‍💻 **_Local Developing run_**
 
 1. Faça toda a preparação do **_Prometheus_** usando **_`MIX_ENV=dev mix project.prepare`_** no seu terminal.
-2. Inicialize o **_Prometheus_** usando **_`MIX_ENV=dev iex -S mix phx.server`_** no seu terminal.
+2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
+3. Inicialize o **_PostgreSQL_** e adeque suas configurações com base em suas configurações no **_PostgreSQL_**.
+4. Inicialize o **_Redis_** e adeque suas configurações com base em suas configurações no **_Redis_**.
+5. Inicialize o **_Prometheus_** usando **_`MIX_ENV=dev iex -S mix phx.server`_** no seu terminal.
 
 #### 🏎️ **_Local production run_**
 
 1. Faça toda a preparação do **_Prometheus_** usando **_`MIX_ENV=prod mix project.prepare`_** no seu terminal.
-2. Inicialize o **_Prometheus_** usando **_`MIX_ENV=prod iex -S mix phx.server`_** no seu terminal.
+2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
+3. Inicialize o **_PostgreSQL_** e adeque suas configurações com base em suas configurações no **_PostgreSQL_**.
+4. Inicialize o **_Redis_** e adeque suas configurações com base em suas configurações no **_Redis_**.
+5. Inicialize o **_Prometheus_** usando **_`MIX_ENV=prod iex -S mix phx.server`_** no seu terminal.
 
 ## 🪷 **_Frontend_**
 

@@ -6,6 +6,7 @@ config :prometheus,
 
 config :prometheus, PrometheusEntry.Endpoint,
   url: [host: "localhost"],
+  render_errors: [formats: [json: PrometheusEntry.Controllers.ErrorJSON], layout: false],
   adapter: Bandit.PhoenixAdapter,
   pubsub_server: Prometheus.PubSubServer
 
