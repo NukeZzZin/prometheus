@@ -3,6 +3,8 @@ import Config
 config :prometheus, PrometheusEntry.Endpoint, server: false
 config :prometheus, Prometheus.Repository, pool: Ecto.Adapters.SQL.Sandbox
 
+config :argon2_elixir, argon2_type: 2, t_cost: 1, m_cost: 4, parallelism: 1
+
 config :logger, :console,
   level: :warning,
   format: "$time [$level] ($metadata) node=$node - $message\n",

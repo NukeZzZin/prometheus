@@ -20,19 +20,11 @@ jwt_secret_key = Dotenvy.env!("JWT_SECRET_KEY", :string, if(config_env() in [:de
 
 config :joken, default_signer: jwt_secret_key
 
-config :argon2_elixir,
-  argon2_type: 2,
-  t_cost: 2,
-  m_cost: 16,
-  parallelism: Dotenvy.env!("ARGON_THREADS", :integer, div(:erlang.system_info(:schedulers_online), 2))
-
 config :snowflake,
   epoch: 1_767_268_800, # ! 2026-01-01 12:00:00 (default)
   machine_id: Dotenvy.env!("MACHINE_ID", :integer, :erlang.phash2(:erlang.node(), 1024))
 
-if Dotenvy.env!("PHX_SERVER", :boolean, false) do
-  config :prometheus, PrometheusEntry.Endpoint, server: true
-end
+if Dotenvy.env!("PHX_SERVER", :boolean, false), do: config(:prometheus, PrometheusEntry.Endpoint, server: true)
 
 postgres_pool_size = Dotenvy.env!("POSTGRES_POOL_SIZE", :integer, :erlang.system_info(:schedulers_online) * 2)
 

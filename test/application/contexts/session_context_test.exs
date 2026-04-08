@@ -1,5 +1,5 @@
 defmodule Prometheus.Contexts.SessionContextTest do
-  use Prometheus.Test.DataCase, async: false
+  use Prometheus.Test.DataCase, async: true
   alias Prometheus.Contexts.SessionContext
   alias Prometheus.Utils.TokenUtil
 

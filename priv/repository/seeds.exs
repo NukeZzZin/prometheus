@@ -25,6 +25,7 @@ admin_user = %UserSchema{}
   content: """
   Caso queira testar o refresh-token, ctrl+shift+i e cole este comando no console:
   localStorage.setItem("prometheus:auth", JSON.stringify((buffer = JSON.parse(localStorage.getItem("prometheus:auth")), buffer.state.accessToken = "", buffer)));
+  window.location.reload();
   """
 })
 |> Repository.insert!()

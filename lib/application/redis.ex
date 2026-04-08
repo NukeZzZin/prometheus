@@ -69,7 +69,7 @@ defmodule Prometheus.Redis do
         __MODULE__,
         :checkout,
         fn _from, connection ->
-          case apply(Redix, type, [connection, payload, [timeout: command_timeout]]) do
+          case apply(Redix, type, [connection, apply_prefix(payload, Process.get(:redis_namespace, nil)), [timeout: command_timeout]]) do
             {:ok, result} -> {{:ok, result}, :ok}
             {:error, %Redix.ConnectionError{}} -> {{:error, :closed}, :remove}
             {:error, reason} -> {{:error, reason}, :ok}
@@ -80,6 +80,19 @@ defmodule Prometheus.Redis do
     catch
       :exit, {:timeout, _} -> {:error, :checkout_timeout}
       :exit, _ -> {:error, :pool_error}
+    end
+  end
+
+  # TODO: Lembre-se de testar se realmente multi-thread resultou em melhorias no tempo de testes
+  @spec apply_prefix(list() | tuple(), binary() | nil) :: list() | tuple()
+  defp apply_prefix(payload, nil), do: payload
+  defp apply_prefix([head | _] = pipeline, prefix) when is_list(head), do: Enum.map(pipeline, &prefix_command(&1, prefix))
+  defp apply_prefix(command, prefix) when is_list(command), do: prefix_command(command, prefix)
+  defp prefix_command([action | rest] = command, prefix) do
+    cond do
+      action in ["PING", "INFO", "FLUSHDB", "SELECT", "AUTH"] or rest == [] -> command
+      is_nil(prefix) or String.starts_with?(hd(rest), prefix) -> command
+      true -> [action, "#{prefix}#{hd(rest)}" | tl(rest)]
     end
   end
 end

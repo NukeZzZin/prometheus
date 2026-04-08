@@ -1,12 +1,9 @@
 import Config
 
-config :prometheus, Prometheus.Repository,
-  stacktrace: true,
-  show_sensitive_data_on_connection_error: true
+config :prometheus, Prometheus.Repository, stacktrace: true, show_sensitive_data_on_connection_error: true
+config :prometheus, PrometheusEntry.Endpoint, check_origin: false, debug_errors: true
 
-config :prometheus, PrometheusEntry.Endpoint,
-  check_origin: false,
-  debug_errors: true
+config :argon2_elixir, argon2_type: 2, t_cost: 2, m_cost: 16, parallelism: 4
 
 config :logger, :console,
   level: :debug,

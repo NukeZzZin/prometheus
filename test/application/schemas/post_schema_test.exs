@@ -28,5 +28,10 @@ defmodule Prometheus.Schemas.PostSchemaTest do
       refute Map.has_key?(changeset.changes, :author_id)
       assert get_field(changeset, :author_id) == author_id
     end
+
+    test "changeset is invalid when required fields are missing" do
+      changeset = PostSchema.create_post_changeset(%PostSchema{}, %{})
+      assert %{title: ["can't be blank"], content: ["can't be blank"]} = errors_on(changeset)
+    end
   end
 end

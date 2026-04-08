@@ -53,6 +53,11 @@ defmodule Prometheus.Schemas.UserSchemaTest do
       assert changeset.valid? and get_change(changeset, :username) == "new_user"
       refute Map.has_key?(changeset.changes, :password) and Map.has_key?(changeset.changes, :password_hash)
     end
+
+    test "changeset is invalid when required fields are missing" do
+      changeset = UserSchema.create_user_changeset(%UserSchema{}, %{})
+      assert %{username: ["can't be blank"], display_name: ["can't be blank"], email: ["can't be blank"]} = errors_on(changeset)
+    end
   end
 
   describe "change_password_changeset/2" do
@@ -61,6 +66,11 @@ defmodule Prometheus.Schemas.UserSchemaTest do
       changeset = UserSchema.change_password_changeset(user, %{"password" => "N3w_P@ssword_Test"})
       assert changeset.valid? and changeset.changes.password_hash
       assert Argon2.verify_pass("N3w_P@ssword_Test", changeset.changes.password_hash)
+    end
+
+    test "changeset is invalid when required fields are missing" do
+      changeset = UserSchema.create_user_changeset(%UserSchema{}, %{})
+      assert %{password: ["can't be blank"]} = errors_on(changeset)
     end
   end
 end

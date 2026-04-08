@@ -77,7 +77,7 @@ defmodule Prometheus.Mix do
       "project.check": ["format --check-formatted", "credo --all --strict", "dialyzer"],
       "project.precommit": ["compile --warnings-as-errors", "project.check", "project.test"],
 
-      "ecto.setup": ["ecto.create --quiet", "ecto.migrate", "run priv/repo/seeds.exs"],
+      "ecto.setup": ["ecto.create --quiet", "ecto.migrate", "run priv/repository/seeds.exs"],
       "ecto.rebuild": ["ecto.drop", "ecto.setup"],
 
       "deps.reset": ["deps.clean --all", "deps.get", "deps.compile"],
