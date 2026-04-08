@@ -61,7 +61,7 @@ case config_env() do
 
     config :prometheus, PrometheusEntry.Endpoint,
       http: [ip: {0, 0, 0, 0, 0, 0, 0, 0}, port: phoenix_server_port],
-      # url: [host: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), port: 443, scheme: "https"],
+      url: [host: if(Dotenvy.env!("PHX_HOST", :string, nil) != nil, do: Dotenvy.env!("PHX_HOST", :string, "prometheus.com"), else: nil)],
       secret_key_base: secret_key_base
 
   :test ->

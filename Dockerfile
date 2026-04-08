@@ -29,7 +29,6 @@ ARG MIX_ENV=prod
 ENV MIX_ENV=${MIX_ENV}
 ENV RELEASE_ROOT=/app
 COPY --from=builder --chown=prometheus:prometheus /app/_build/${MIX_ENV}/rel/prometheus ./
-COPY --chown=prometheus:prometheus .env .env
 USER prometheus
 EXPOSE 4000
 CMD ["sh", "-c", "bin/prometheus eval \"Prometheus.Release.setup\" && bin/prometheus start"]
