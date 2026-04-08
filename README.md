@@ -1,6 +1,6 @@
 # 💻 **_Prometheus_** 
 
-**_Prometheus_** é um projeto pessoal desenvolvido como portfólio backend em **_Elixir_**, utilizando o framework **_Phoenix_**. A aplicação incorpora práticas modernas de desenvolvimento e integra ferramentas como **_Argon2_** para hashing de senhas e **_SnowflakeID_** para geração de identificadores distribuídos. Além disso, faz uso de tecnologias como **_Docker_**, **_Redis_** e **_PostgreSQL_**, refletindo uma arquitetura escalável, performática e alinhada a padrões utilizados em sistemas de produção.
+**_Prometheus_** é um projeto pessoal desenvolvido como portfólio backend em **_Elixir_**, utilizando o framework **_Phoenix_**. A aplicação incorpora práticas modernas de desenvolvimento e integra ferramentas como **_Argon2_** para hashing de senhas e **_SnowflakeID_** para geração de identificadores distribuídos. Além disso, faz uso de tecnologias como **_Docker_**, **_Redis_** e **_PostgreSQL_**.
 
 ## 🌎 **_Prerequisites_**
 
@@ -29,6 +29,10 @@
 
 1. Faça toda a preparação do **_Prometheus_** usando **_`MIX_ENV=prod mix project.prepare`_** no seu terminal.
 2. Inicialize o **_Prometheus_** usando **_`MIX_ENV=prod iex -S mix phx.server`_** no seu terminal.
+
+## 🪷 **_Frontend_**
+
+**_Prometheus_** também possui um repositório dedicado à sua camada de frontend, [**_Zeus_**](https://github.com/NukeZzZin/zeus), desenvolvido em **_NodeJS_** com o uso do framework **_React (Vite)_**. A aplicação adota uma abordagem moderna de desenvolvimento, utilizando **_Axios_** para comunicação com **_Prometheus_**, **_Material UI_** para construção de interfaces consistentes e acessíveis, e **_Zustand_** para gerenciamento de estado de forma simples e eficiente.
 
 ## 📝 **_License_**
 
