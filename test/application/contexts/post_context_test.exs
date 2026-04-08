@@ -1,17 +1,11 @@
 defmodule Prometheus.Contexts.PostContextTest do
   use Prometheus.Test.DataCase, async: true
-  alias Prometheus.Contexts.AccountContext
   alias Prometheus.Contexts.PostContext
   alias Prometheus.Schemas.PostSchema
 
-  @user_attributes %{"username" => "test_user", "display_name" => "Test User", "email" => "test@test.test", "password" => "TestP@ssw0rd"}
   @valid_attributes %{"title" => "Test Post", "content" => "Test Post Content."}
 
-  setup do
-    {:ok, _tuple_tokens} = AccountContext.register_user(@user_attributes)
-    user = Repository.get_by!(Prometheus.Schemas.UserSchema, username: "test_user")
-    {:ok, author_id: user.id}
-  end
+  setup do: inject_mocking_user()
 
   describe "create_post/1" do
     test "successfully creates a post and returns the post_id", %{author_id: author_id} do

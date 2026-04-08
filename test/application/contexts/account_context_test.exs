@@ -41,12 +41,12 @@ defmodule Prometheus.Contexts.AccountContextTest do
 
   describe "get_user_by_identifier/1" do
     test "finds user by email (normalized)" do
-      {:ok, _} = AccountContext.register_user(@valid_attributes)
+      {:ok, _tuple_tokens} = AccountContext.register_user(@valid_attributes)
       assert {:ok, %UserSchema{username: "test_user"}} = AccountContext.get_user_by_identifier("test@test.test")
     end
 
     test "finds user by username (normalized)" do
-      {:ok, _} = AccountContext.register_user(@valid_attributes)
+      {:ok, _tuple_tokens} = AccountContext.register_user(@valid_attributes)
       assert {:ok, %UserSchema{email: "test@test.test"}} = AccountContext.get_user_by_identifier("test_user")
     end
 
