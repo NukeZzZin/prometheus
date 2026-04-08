@@ -18,9 +18,9 @@
 
 #### 📦 **_Docker Compose deploy_**
 
-1. Construa o container **_Docker_** usando **_`docker-compose build`_** no seu terminal.
+1. Construa o container **_Docker_** usando **_`MIX_ENV=dev docker-compose build`_** no seu terminal.
 2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
-3. Inicialize o container **_Docker_** usando **_`docker-compose --profile application up`_** no seu terminal.
+3. Inicialize o container **_Docker_** usando **_`MIX_ENV=dev docker-compose --profile application up`_** no seu terminal.
 
 #### 🐱‍💻 **_Local Developing run_**
 
