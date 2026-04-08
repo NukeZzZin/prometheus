@@ -9,7 +9,10 @@ defmodule Prometheus.Test.DataCase do
       import Plug.Conn
       import Phoenix.ConnTest
       import PrometheusEntry.Test.ConnCase
+      import Prometheus.Test.DataCase
+      import Ecto.Changeset
       alias Prometheus.Repository
+      alias Prometheus.Redis
     end
   end
 
@@ -21,9 +24,8 @@ defmodule Prometheus.Test.DataCase do
   @spec setup_sandbox(map()) :: :ok
   def setup_sandbox(context) do
     process_id = Ecto.Adapters.SQL.Sandbox.start_owner!(Prometheus.Repository, shared: not context[:async])
-    on_exit(fn ->
-      Ecto.Adapters.SQL.Sandbox.stop_owner(process_id)
-    end)
+    on_exit(fn -> Ecto.Adapters.SQL.Sandbox.stop_owner(process_id) end)
+    Prometheus.Redis.command(["FLUSHDB"])
     :ok
   end
 

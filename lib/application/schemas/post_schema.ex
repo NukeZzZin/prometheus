@@ -22,6 +22,7 @@ defmodule Prometheus.Schemas.PostSchema do
     changeset
     |> cast(attributes, [:title, :content, :author_id])
     |> validate_required([:title, :content, :author_id])
+    |> foreign_key_constraint(:author_id)
     |> ChangesetUtil.put_changeset_snowflake_id()
   end
 

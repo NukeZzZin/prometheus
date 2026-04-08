@@ -1,5 +1,5 @@
 defmodule Prometheus.Utils.TokenUtilTest do
-  use ExUnit.Case, async: true
+  use Prometheus.Test.DataCase, async: true
   alias Prometheus.Utils.TokenUtil
 
   @user_id "1"
@@ -44,7 +44,7 @@ defmodule Prometheus.Utils.TokenUtilTest do
   describe "token validation logic" do
       test "fails to verify tokens with invalid signature or tampered payload" do
         {:ok, access_token, _access_claims} = TokenUtil.generate_access_token(@user_id)
-        assert {:error, :invalid_token} = TokenUtil.verify_access_token(access_token <> "broken")
+        assert {:error, :invalid_token} = TokenUtil.verify_access_token(access_token <> "invalid")
       end
 
       test "rejects expired tokens (simulated)" do

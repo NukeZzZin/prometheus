@@ -1,5 +1,5 @@
 defmodule Prometheus.Utils.GenericUtilTest do
-  use ExUnit.Case, async: true
+  use Prometheus.Test.DataCase, async: true
   alias Prometheus.Utils.GenericUtil
 
   describe "normalize_string/1" do
