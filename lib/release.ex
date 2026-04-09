@@ -1,4 +1,6 @@
 defmodule Prometheus.Release do
+  @moduledoc false
+  @spec setup() :: :ok
   def setup do
     Application.load(:prometheus)
     for repository <- Application.fetch_env!(:prometheus, :ecto_repos) do
@@ -7,5 +9,6 @@ defmodule Prometheus.Release do
       seeds_script = Application.app_dir(:prometheus, "priv/repository/seeds.exs")
       if File.exists?(seeds_script), do: Code.eval_file(seeds_script)
     end
+    :ok
   end
 end

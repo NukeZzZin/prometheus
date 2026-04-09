@@ -28,9 +28,10 @@ defmodule PrometheusEntry.Controllers.FallbackController do
   end
 
   @spec build_response(Plug.Conn.t(), atom(), term()) :: Plug.Conn.t()
-  defp build_response(connection, status, data) do
+  defp build_response(connection, atom_status, data) do
+    string_status = Atom.to_string(atom_status)
     connection
-    |> put_status(status)
-    |> json(%{success: false, errors: [%{code: String.upcase(Atom.to_string(status)), message: data}]})
+    |> put_status(atom_status)
+    |> json(%{success: false, errors: [%{code: String.upcase(string_status), message: data}]})
   end
 end

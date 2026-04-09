@@ -89,10 +89,13 @@ defmodule Prometheus.Redis do
   defp apply_prefix([head | _] = pipeline, prefix) when is_list(head), do: Enum.map(pipeline, &prefix_command(&1, prefix))
   defp apply_prefix(command, prefix) when is_list(command), do: prefix_command(command, prefix)
   defp prefix_command([action | rest] = command, prefix) do
-    cond do
-      action in ["PING", "INFO", "FLUSHDB", "SELECT", "AUTH"] or rest == [] -> command
-      is_nil(prefix) or String.starts_with?(hd(rest), prefix) -> command
-      true -> [action, "#{prefix}#{hd(rest)}" | tl(rest)]
+    case rest do
+        [] -> command
+        [head_rest | tail_rest] -> cond do
+          action in ["PING", "INFO", "FLUSHDB", "SELECT", "AUTH"] -> command
+          is_nil(prefix) or String.starts_with?(head_rest, prefix) -> command
+          true -> [action, "#{prefix}#{head_rest}" | tail_rest]
+        end
     end
   end
 end

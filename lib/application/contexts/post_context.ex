@@ -6,7 +6,10 @@ defmodule Prometheus.Contexts.PostContext do
 
   @spec create_post(map()) :: {:ok, %{post_id: String.t()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
   def create_post(%{"title" => _, "content" => _, "author_id" => _} = attributes) do
-    case Repository.insert(PostSchema.create_post_changeset(%PostSchema{}, attributes)) do
+    repository_insert = %PostSchema{}
+    |> PostSchema.create_post_changeset(attributes)
+    |> Repository.insert()
+    case repository_insert do
       {:ok, %PostSchema{id: post_id}} -> {:ok, %{post_id: post_id}}
       {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
       _ -> {:error, :internal_server_error}

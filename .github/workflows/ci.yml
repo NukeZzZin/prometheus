@@ -1,0 +1,86 @@
+# yaml-language-server: $schema=https://www.schemastore.org/github-workflow.json
+name: Continuous Integration
+on:
+  push:
+    branches: [master]
+  pull_request:
+    branches: [master]
+
+jobs:
+  test:
+    strategy:
+      matrix:
+        elixir: ["1.19.5"]
+        otp: ["28.0"]
+    runs-on: [ubuntu-slim]
+    env:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: prometheus_test
+      POSTGRES_HOST: localhost
+      REDIS_PASSWORD: redis
+    services:
+      postgres:
+        image: postgres:16-alpine
+        env:
+          POSTGRES_USER: postgres
+          POSTGRES_PASSWORD: postgres
+          POSTGRES_DB: prometheus_test
+        options: >-
+          --health-cmd pg_isready
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 5432:5432
+      redis:
+        image: redis:8-alpine
+        options: >-
+          --requirepass redis
+          --health-cmd "redis-cli -a redis ping"
+          --health-interval 10s
+          --health-timeout 5s
+          --health-retries 5
+        ports:
+          - 6379:6379
+    steps:
+      - uses: actions/checkout@v6
+      - name: Setup Elixir
+        uses: erlef/setup-beam@v1
+        with:
+          otp-version: ${{matrix.otp}}
+          elixir-version: ${{matrix.elixir}}
+      - name: Cache dependencies
+        uses: actions/cache@v5
+        id: cache-deps
+        with:
+          path: deps
+          key: ${{runner.os}}-mix-${{env.cache-name}}-${{hashFiles('**/mix.lock')}}
+          restore-keys: |
+            ${{ runner.os }}-mix-${{ env.cache-name }}-
+      - name: Cache compiled build
+        uses: actions/cache@v5
+        id: cache-build
+        with:
+          path: _build
+          key: ${{runner.os}}-mix-${{env.cache-name}}-${{hashFiles('**/mix.lock')}}
+          restore-keys: |
+            ${{runner.os }}-mix-${{ env.cache-name }}-
+            ${{runner.os }}-mix-
+      - name: Clean to rule out incremental build as a source of flakiness
+        if: github.run_attempt != '1'
+        run: |
+          mix deps.clean --all
+          mix clean
+        shell: sh
+      - name: Install dependencies
+        run: mix deps.get
+      - name: Project compile
+        run: mix compile
+      - name: Setup PostgreSQL
+        run: |
+          mix ecto.create
+          mix ecto.migrate
+          mix run priv/repository/seeds.exs
+      - name: Runs tests
+        run: mix test

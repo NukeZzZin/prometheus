@@ -20,9 +20,10 @@ defmodule PrometheusEntry.Middlewares.AuthMiddlewareTest do
     end
 
     test "returns 401 unauthorized when token is missing" do
-      connection = AuthMiddleware.call(conn(:get, "/"), @options)
-      assert connection.status == 401 and connection.halted
-      response = Jason.decode!(connection.resp_body)
+      connection = conn(:get, "/")
+      middleware_layer = AuthMiddleware.call(connection, @options)
+      assert middleware_layer.status == 401 and middleware_layer.halted
+      response = Jason.decode!(middleware_layer.resp_body)
       assert response["success"] == false and hd(response["errors"])["code"] == "UNAUTHORIZED"
     end
 

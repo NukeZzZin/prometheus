@@ -8,7 +8,10 @@ defmodule Prometheus.Contexts.AccountContext do
 
   @spec register_user(map()) :: {:ok, %{access_token: Joken.bearer_token(), refresh_token: Joken.bearer_token()}} | {:error, Ecto.Changeset.t()} | {:error, :internal_server_error}
   def register_user(%{"username" => _, "display_name" => _, "email" => _, "password" => _} = attributes) do
-    case Repository.insert(UserSchema.create_user_changeset(%UserSchema{}, attributes)) do
+    repository_insert = %UserSchema{}
+    |> UserSchema.create_user_changeset(attributes)
+    |> Repository.insert()
+    case repository_insert do
       {:ok, %UserSchema{} = user} -> SessionContext.create_session(user.id)
       {:error, %Ecto.Changeset{} = changeset} -> {:error, changeset}
       _ -> {:error, :internal_server_error}

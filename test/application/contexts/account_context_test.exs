@@ -23,19 +23,23 @@ defmodule Prometheus.Contexts.AccountContextTest do
     setup do: AccountContext.register_user(@valid_attributes)
 
     test "successfully logs in with email" do
-      assert {:ok, %{access_token: _, refresh_token: _}} = AccountContext.login_user(%{"identifier" => "test@test.test", "password" => "TestP@ssw0rd"})
+      attributes = %{"identifier" => "test@test.test", "password" => "TestP@ssw0rd"}
+      assert {:ok, %{access_token: _, refresh_token: _}} = AccountContext.login_user(attributes)
     end
 
     test "successfully logs in with username" do
-      assert {:ok, %{access_token: _, refresh_token: _}} = AccountContext.login_user(%{"identifier" => "test_user", "password" => "TestP@ssw0rd"})
+      attributes = %{"identifier" => "test_user", "password" => "TestP@ssw0rd"}
+      assert {:ok, %{access_token: _, refresh_token: _}} = AccountContext.login_user(attributes)
     end
 
     test "fails with incorrect password" do
-      assert {:error, :invalid_credentials} = AccountContext.login_user(%{"identifier" => "test_user", "password" => "wrong_password"})
+      attributes = %{"identifier" => "test_user", "password" => "wrong_password"}
+      assert {:error, :invalid_credentials} = AccountContext.login_user(attributes)
     end
 
     test "fails with non-existent user (and prevents timing attacks)" do
-      assert {:error, :invalid_credentials} = AccountContext.login_user(%{"identifier" => "not_test_user", "password" => "TestP@ssw0rd"})
+      attributes = %{"identifier" => "not_test_user", "password" => "TestP@ssw0rd"}
+      assert {:error, :invalid_credentials} = AccountContext.login_user(attributes)
     end
   end
 

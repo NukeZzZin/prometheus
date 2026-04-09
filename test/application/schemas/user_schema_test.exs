@@ -63,7 +63,8 @@ defmodule Prometheus.Schemas.UserSchemaTest do
   describe "change_password_changeset/2" do
     test "updates password and generates new hash" do
       user = %UserSchema{password_hash: "antigo_hash"}
-      changeset = UserSchema.change_password_changeset(user, %{"password" => "N3w_P@ssword_Test"})
+      attributes = %{"password" => "N3w_P@ssword_Test"}
+      changeset = UserSchema.change_password_changeset(user, attributes)
       assert changeset.valid? and changeset.changes.password_hash
       assert Argon2.verify_pass("N3w_P@ssword_Test", changeset.changes.password_hash)
     end

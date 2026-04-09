@@ -3,11 +3,21 @@ defmodule PrometheusEntry.Controllers.ErrorJSON do
   use PrometheusEntry, :controller
 
   @spec render(String.t(), map()) :: map()
-  def render(template, _assigns), do: build_error_response(extract_status_code(template), Phoenix.Controller.status_message_from_template(template))
+  def render(template, _assigns) do
+    status_code = extract_status_code(template)
+    message = Phoenix.Controller.status_message_from_template(template)
+    build_error_response(status_code, message)
+  end
 
   # * === Private Helpers === * #
   @spec extract_status_code(String.t()) :: atom()
-  defp extract_status_code(template), do: template |> String.split(".") |> List.first() |> String.to_integer() |> status_atom()
+  defp extract_status_code(template) do
+    template
+    |> String.split(".")
+    |> List.first()
+    |> String.to_integer()
+    |> status_atom()
+  end
 
   @spec status_atom(integer()) :: atom()
   defp status_atom(400), do: :bad_request
@@ -18,6 +28,9 @@ defmodule PrometheusEntry.Controllers.ErrorJSON do
   defp status_atom(500), do: :internal_server_error
   defp status_atom(_), do: :internal_server_error
 
-  @spec build_error_response(atom(), String.t()) :: map()
-  defp build_error_response(code, message), do: %{success: false, errors: [%{code: String.upcase(to_string(code)), message: message}]}
+  @spec build_error_response(atom(), String.t()) :: map
+  defp build_error_response(error_code, message) do
+    status_code = to_string(error_code)
+    %{success: false, errors: [%{code: String.upcase(status_code), message: message}]}
+  end
 end

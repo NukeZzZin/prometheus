@@ -12,7 +12,8 @@ defmodule Prometheus.Utils.GenericUtil do
 
   @spec parse_integer(String.t(), integer() | nil) :: integer() | nil
   def parse_integer(value, default \\ nil) when is_binary(value) and byte_size(value) > 0 do
-    case Integer.parse(String.trim(value)) do
+    trimed_value = String.trim(value)
+    case Integer.parse(trimed_value) do
       {parsed_value, _} -> parsed_value
       _ -> default
     end

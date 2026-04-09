@@ -31,7 +31,6 @@
           {Credo.Check.Design.TagTODO, [priority: :low]},
 
           # * === Readability Checks === * #
-          {Credo.Check.Readability.AliasAs, []},
           {Credo.Check.Readability.AliasOrder, []},
           {Credo.Check.Readability.BlockPipe, []},
           {Credo.Check.Readability.FunctionNames, []},
@@ -42,7 +41,7 @@
           {Credo.Check.Readability.ModuleAttributeNames, []},
           {Credo.Check.Readability.ModuleDoc, []},
           {Credo.Check.Readability.ModuleNames, []},
-          {Credo.Check.Readability.MultiAlias, []},
+          {Credo.Check.Readability.MultiAlias, false},
           {Credo.Check.Readability.NestedFunctionCalls, []},
           {Credo.Check.Readability.OneArityFunctionInPipe, []},
           {Credo.Check.Readability.OnePipePerLine, []},

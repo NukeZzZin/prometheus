@@ -33,7 +33,8 @@ defmodule Prometheus.Test.DataCase do
   def inject_mocking_user(attributes \\ %{}) do
     unique_discriminator = System.unique_integer([:positive, :monotonic])
     default_attributes = %{"username" => "user_#{unique_discriminator}", "display_name" => "TestUser", "email" => "test_#{unique_discriminator}@test.com", "password" => "TestP@ssw0rd"}
-    {:ok, _tuple_tokens} = Prometheus.Contexts.AccountContext.register_user(Map.merge(default_attributes, attributes))
+    final_attributes = Map.merge(default_attributes, attributes)
+    {:ok, _tuple_tokens} = Prometheus.Contexts.AccountContext.register_user(final_attributes)
     unique_user = Prometheus.Repository.get_by!(Prometheus.Schemas.UserSchema, username: "user_#{unique_discriminator}")
     {:ok, author_id: unique_user.id, user: unique_user}
   end
