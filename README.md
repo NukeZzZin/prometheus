@@ -22,7 +22,7 @@
 2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
 3. Inicialize o container **_Docker_** usando **_`docker-compose --profile application up`_** no seu terminal.
 
-#### 🐱‍💻 **_Local Developing run_**
+#### 🐱‍💻 **_Local developing run_**
 
 1. Faça toda a preparação do **_Prometheus_** usando **_`MIX_ENV=dev mix project.prepare`_** no seu terminal.
 2. Definir as variáveis de ambiente em um arquivo **_`.env`_**, seguindo o exemplo de **_`.env.example`_**.
